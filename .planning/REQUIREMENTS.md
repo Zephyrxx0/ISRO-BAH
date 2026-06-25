@@ -175,9 +175,9 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 | VAL-03 | Phase 3 | Pending |
 | VAL-04 | Phase 3 | Pending |
 | VAL-05 | Phase 3 | Pending |
-| VIS-01 | Phase 4 | Pending |
-| VIS-02 | Phase 4 | Pending |
-| VIS-03 | Phase 4 | Pending |
+| VIS-01 | Phase 3 | Pending |
+| VIS-02 | Phase 3 | Pending |
+| VIS-03 | Phase 3 | Pending |
 | DASH-01 | Phase 4 | Pending |
 | DASH-02 | Phase 4 | Pending |
 | DASH-03 | Phase 4 | Pending |
@@ -190,8 +190,8 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 | MLOP-02 | Phase 2 | Pending |
 
 **Coverage:**
-- v1 requirements: 52 total
-- Mapped to phases: 52
+- v1 requirements: 55 total
+- Mapped to phases: 55
 - Unmapped: 0
 
 ---
