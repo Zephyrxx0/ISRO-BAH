@@ -70,6 +70,6 @@ Phases 1–3 are strictly sequential (hard data dependencies). Phase 4 can begin
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/0 | Not started | - |
-| 2. Intelligence | 0/0 | Not started | - |
+| 2. Intelligence | 0/5 | Planned | - |
 | 3. Characterization | 0/0 | Not started | - |
 | 4. Presentation | 0/0 | Not started | - |
