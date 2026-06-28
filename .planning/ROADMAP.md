@@ -47,7 +47,7 @@ Four vertically-integrated phases deliver an end-to-end ML pipeline that ingests
   3. TRICERATOPS+ computes FPP<1.5% and NFPP<0.1% on top 5 Gold planet candidates qualifying as "Validated Planets"; SHERLOCK benchmark confirms pipeline recovery against published 98% TOI recovery rate
   4. Pre-pipeline validation pass (Day 1) confirms recovery of WASP-121b; end-to-end validation confirms recovery of TOI-270 (3 planets), L 98-59 (3 planets), and TOI-700 d with correct periods and depths
   5. Every SDE≥7 candidate receives a 4-panel diagnostic plot (raw+detrended LC with transit epochs, TLS periodogram with peak annotated, phase-folded LC + batman model overlaid with residuals, classifier softmax bar chart) exported as publication-quality PNG (150 dpi) and interactive Plotly HTML; completeness map shows recovery fraction vs. depth/period from synthetic injection
-**Plans**: TBD
+**Plans**: 03-01 through 03-07 (7 plans, 3 waves)
 
 ### Phase 4: Presentation — Dashboard & Report
 **Goal**: Interactive Next.js read-only dashboard displays all pipeline outputs with filterable candidate table and celestial star map; candidate catalogue CSV and 4-page PDF report are generated and ready for ISRO judge presentation.
@@ -71,5 +71,5 @@ Phases 1–3 are strictly sequential (hard data dependencies). Phase 4 can begin
 |-------|----------------|--------|-----------|
 | 1. Foundation | 0/0 | Not started | - |
 | 2. Intelligence | 0/5 | Planned | - |
-| 3. Characterization | 0/0 | Not started | - |
+| 3. Characterization | 0/7 | Planned | - |
 | 4. Presentation | 0/0 | Not started | - |
