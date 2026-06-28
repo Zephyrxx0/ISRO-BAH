@@ -59,7 +59,7 @@ Four vertically-integrated phases deliver an end-to-end ML pipeline that ingests
   3. Candidate catalogue CSV is output with all required columns: TIC ID, period, depth, duration, SDE, SNR, classification label, disposition (PLANET CANDIDATE / ECLIPSING BINARY / BACKGROUND BLEND / STELLAR VARIABILITY / SUB-THRESHOLD), confidence score, confidence tier, and parameter uncertainties
   4. 4-page PDF report is generated: Page 1 — Methodology (flowchart + confusion matrix), Page 2 — Results (candidate table + best planet highlight), Page 3 — Validation (TRICERATOPS+ FPP + SHERLOCK comparison + recovery tests + completeness map), Page 4 — Uncertainties (MCMC posteriors + assumptions + limitations)
   5. Entire pipeline executes from raw data ingestion to final report via single command `python run_pipeline.py --sectors 1,2,3` producing all outputs in `/outputs/` directory
-**Plans**: TBD
+**Plans**: 04-01 through 04-06 (6 plans, 3 waves)
 **UI hint**: yes
 
 ## Progress
@@ -72,4 +72,4 @@ Phases 1–3 are strictly sequential (hard data dependencies). Phase 4 can begin
 | 1. Foundation | 0/0 | Not started | - |
 | 2. Intelligence | 0/5 | Planned | - |
 | 3. Characterization | 0/7 | Planned | - |
-| 4. Presentation | 0/0 | Not started | - |
+| 4. Presentation | 0/6 | Planned | - |
