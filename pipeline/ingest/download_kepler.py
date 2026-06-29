@@ -17,7 +17,7 @@ def download_kepler_tce_catalog():
     # TAP query for Q1-Q17 DR24 TCE catalog
     url = "https://exoplanetarchive.ipac.caltech.edu/TAP/sync?query=select+kepid,tce_plnt_num,tce_period,tce_time0bk,tce_duration,tce_depth,av_training_set+from+q1_q17_dr24_tce&format=csv"
     
-    response = requests.get(url)
+    response = requests.get(url, timeout=60)
     response.raise_for_status()
     
     out_path.parent.mkdir(parents=True, exist_ok=True)
