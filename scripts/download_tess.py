@@ -15,7 +15,9 @@ def download_star_all_sectors(tic_id):
     """Download all available TESS 2-min cadence SPOC light curves for a single target."""
     catalog_rows = []
     try:
-        search = lk.search_lightcurve(f"TIC {tic_id}", author="SPOC")
+        # Explicitly filter to 2-minute ('short') cadence to prevent multiple cadences 
+        # within the same sector from overwriting each other.
+        search = lk.search_lightcurve(f"TIC {tic_id}", author="SPOC", cadence="short")
         if len(search) == 0:
             return catalog_rows
         
@@ -47,15 +49,14 @@ def download_star_all_sectors(tic_id):
             save_lc_npz(
                 tic_id=tic_id,
                 sector=sector,
-                time_arr=lc.time.value,
-                flux_arr=lc.flux.value,
+                time=lc.time.value,
+                flux=lc.flux.value,
                 flux_err=lc.flux_err.value,
-                quality_arr=lc.quality,
+                quality=lc.quality,
                 meta=meta,
                 kind='raw'
             )
             catalog_rows.append(meta)
-            # Removed print to prevent I/O closed file error in Kaggle threads
             
     except Exception as e:
         catalog_rows.append({
