@@ -277,8 +277,11 @@ export function generateMockPayload(hour: number): PipelinePayload {
     }
   };
 
+  const baseTime = new Date('2026-06-28T00:00:00.000Z');
+  baseTime.setUTCHours(baseTime.getUTCHours() + hour);
+
   return {
-    timestamp: "2026-06-28T12:00:00.000Z",
+    timestamp: baseTime.toISOString(),
     pipelineVersion: "v4.2.1-alpha",
     hourElapsed: hour,
     candidates
