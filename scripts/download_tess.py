@@ -58,8 +58,11 @@ def download_star_all_sectors(tic_id):
             # Removed print to prevent I/O closed file error in Kaggle threads
             
     except Exception as e:
-        # Silently handle exceptions in thread to avoid I/O closed file error
-        pass
+        catalog_rows.append({
+            "tic_id": int(tic_id),
+            "download_status": "ERROR",
+            "exclusion_reason": repr(e),
+        })
         
     return catalog_rows
 
