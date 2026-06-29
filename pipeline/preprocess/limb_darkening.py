@@ -6,9 +6,6 @@ def get_ld_coefficients(tic_id, meta):
     """
     Retrieve quadratic limb darkening coefficients (u1, u2) using a 1D 
     nearest-neighbor lookup on effective temperature (Teff) against the Claret table.
-    
-    Note: The underlying claret_ld table uses static approximations for logg (4.5) 
-    and feh (0.0), making the lookup effectively Teff-only.
     """
     teff = meta.get('teff')
     if teff is None or np.isnan(teff):
@@ -19,7 +16,7 @@ def get_ld_coefficients(tic_id, meta):
         if df.empty:
             return cfg.LD_DEFAULT
             
-        # Perform 1D absolute difference matching on Teff
+        # 1D nearest neighbor lookup over Teff dimension only
         idx = (df['teff'] - teff).abs().idxmin()
         row = df.loc[idx]
         
