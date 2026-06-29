@@ -1,41 +1,48 @@
 import pandas as pd
 from pathlib import Path
 
+# Mapping system names to their TIC IDs and explicit lists of expected planet periods (7 total targets)
+BENCHMARKS = {
+    "WASP-121b": {"tic_id": 22529346, "periods": [1.27492]},
+    "L 98-59": {"tic_id": 307210830, "periods": [2.25311, 3.69068, 7.45073]},  # planets b, c, d
+    "TOI-270": {"tic_id": 259377017, "periods": [3.36008, 5.66017, 11.38014]}  # planets b, c, d
+}
+
 def run_smoke_test(catalogue_path):
     """
-    Validate recovery of known benchmark planets:
-    - WASP-121b (TIC 22529346, Period ~1.27d)
-    - L 98-59 (TIC 307210830, Periods ~2.25d, 3.69d, 7.45d)
-    - TOI-270 (TIC 259377017, Periods ~3.36d, 5.66d, 11.38d)
+    Validate recovery of all 7 known benchmark planets across the 3 systems.
     """
-    benchmarks = {
-        'WASP-121b': {'tic_id': 22529346, 'period': 1.2749, 'recovered': False},
-        'L 98-59': {'tic_id': 307210830, 'period': 2.25, 'recovered': False}, # checks first planet
-        'TOI-270': {'tic_id': 259377017, 'period': 3.36, 'recovered': False} # checks first planet
-    }
-    
     path = Path(catalogue_path)
     if not path.exists():
-        print(f"Warning: Catalogue not found at {catalogue_path}. Return unrecovered benchmarks.")
-        return benchmarks
+        print(f"Warning: Catalogue not found at {catalogue_path}.")
+        return False
         
+    all_passed = True
     try:
         df = pd.read_parquet(path)
         
-        for name, info in benchmarks.items():
-            # Find signals for this TIC ID
+        for system, info in BENCHMARKS.items():
+            # Filter the dataframe for this specific star system
             star_signals = df[df['tic_id'] == info['tic_id']]
-            if len(star_signals) > 0:
-                # Check if any signal has a period within 2% of the benchmark period
+            
+            for expected_p in info['periods']:
+                match_found = False
+                
+                # Check if any recovered row in the dataframe matches this specific period
                 for _, row in star_signals.iterrows():
-                    diff = abs(row['period'] - info['period']) / info['period']
-                    if diff < 0.02 and row['disposition'] != 'DISCARD':
-                        info['recovered'] = True
-                        info['found_period'] = row['period']
-                        info['found_sde'] = row['sde']
+                    diff = abs(row['period'] - expected_p) / expected_p
+                    if diff < 0.01 and row.get('disposition') != 'DISCARD':
+                        match_found = True
                         break
+                
+                if not match_found:
+                    print(f"❌ Verification FAILED: {system} planet with period {expected_p}d not found.")
+                    all_passed = False
+                else:
+                    print(f"✅ Verified: {system} planet with period {expected_p}d recovered.")
                         
     except Exception as e:
         print(f"Error during smoke test validation: {e}")
+        return False
         
-    return benchmarks
+    return all_passed
