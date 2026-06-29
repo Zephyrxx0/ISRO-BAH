@@ -18,6 +18,10 @@ def apply_sde_gating(tls_results):
         return pd.DataFrame(columns=cols)
         
     df = pd.DataFrame(tls_results)
+    if 'bls_consistent' not in df.columns:
+        df['bls_consistent'] = False
+    else:
+        df['bls_consistent'] = df['bls_consistent'].fillna(False).astype(bool)
     
     # Sort by SDE descending
     df = df.sort_values(by='sde', ascending=False).reset_index(drop=True)
