@@ -5,8 +5,8 @@ def apply_sigma_clip(time, flux, flux_err, sigma=5.0):
     """
     Perform 5σ sigma clipping to remove outliers and normalize flux by the median.
     """
-    clipped = sigma_clip(flux, sigma=sigma, maxiters=5, censored=False)
-    mask = ~clipped.mask
+    clipped = sigma_clip(flux, sigma=sigma, maxiters=5)
+    mask = ~np.ma.getmaskarray(clipped)
     
     clean_time = time[mask]
     clean_flux = flux[mask]
