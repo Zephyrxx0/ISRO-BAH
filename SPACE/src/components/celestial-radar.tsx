@@ -105,9 +105,8 @@ export default function CelestialRadar({
           <!-- Target center box -->
           <div class="absolute w-2 h-2 ${colorClass} border border-zinc-950 transition-transform ${isSelected ? 'scale-150 animate-ping' : ''}"></div>
           <div class="absolute w-2 h-2 ${colorClass} border border-zinc-950 transition-transform ${isSelected ? 'scale-110' : 'group-hover:scale-125'}"></div>
-          <!-- ID Label tooltip -->
           <div class="absolute top-6 left-6 bg-zinc-950 border border-zinc-50 text-[8px] font-mono text-zinc-50 px-1 py-0.5 whitespace-nowrap opacity-75 group-hover:opacity-100 transition-opacity">
-            ${cand.name} RA:${cand.ra.toFixed(1)}°
+            ${cand.name.replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string))} RA:${cand.ra.toFixed(1)}°
           </div>
         </div>
       `;
