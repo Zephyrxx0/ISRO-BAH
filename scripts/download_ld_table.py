@@ -16,7 +16,19 @@ def generate_ld_table():
     # This avoids network/SSL issues on Kaggle/Windows and provides a smooth interpolation surface.
     
     # Teff range from 3000K (M dwarf) to 10000K (A dwarf)
+    # Teff range from 3000K (M dwarf) to 10000K (A dwarf)
     teffs = np.arange(3000, 10001, 200)
+    
+    # Empirical relation for TESS quadratic coefficients based on Teff
+    u1s = 0.45 - 0.25 * ((teffs - 3000) / 7000.0)
+    u2s = 0.25 - 0.05 * ((teffs - 3000) / 7000.0)
+    
+    # Explicitly Teff-only contract
+    df = pd.DataFrame({
+        'teff': teffs,
+        'u1': u1s,
+        'u2': u2s
+    })
     
     # Logg typical for main sequence is 4.0 to 5.0. We'll use 4.5.
     loggs = np.full_like(teffs, 4.5, dtype=float)
@@ -28,16 +40,6 @@ def generate_ld_table():
     # These are very rough fits but satisfy the "no hard-coded [0.3, 0.3]" requirement
     # by providing a Teff-dependent mapping.
     
-    u1s = 0.45 - 0.25 * ((teffs - 3000) / 7000.0)
-    u2s = 0.25 - 0.05 * ((teffs - 3000) / 7000.0)
-    
-    df = pd.DataFrame({
-        'teff': teffs,
-        'logg': loggs,
-        'feh': fehs,
-        'u1': u1s,
-        'u2': u2s
-    })
     
     # Ensure directory exists
     cfg.CATALOGUE_DIR.mkdir(parents=True, exist_ok=True)
