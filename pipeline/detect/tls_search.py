@@ -114,10 +114,9 @@ def run_tls_batch(star_list, workers=None):
                 try:
                     res_list = future.result()
                     all_results.extend(res_list)
+                    completed_keys.add(key)
                 except Exception as e:
                     print(f"Process error for key {key}: {e}")
-                
-                completed_keys.add(key)
                 
                 # Checkpoint every 100 stars or at the end
                 if idx % 100 == 0 or idx == len(to_process):
