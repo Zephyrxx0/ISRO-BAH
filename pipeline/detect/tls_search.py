@@ -129,6 +129,12 @@ def run_tls_batch(star_list, workers=None):
                     print(f"TLS progress checkpointed: {idx}/{len(to_process)} stars done.")
                     
     except KeyboardInterrupt:
+        checkpoint_file.parent.mkdir(parents=True, exist_ok=True)
+        with open(checkpoint_file, 'w') as f:
+            json.dump({
+                'completed': list(completed_keys),
+                'results': all_results,
+            }, f)
         print("Interrupted! Checkpoint saved.")
         
     return all_results
