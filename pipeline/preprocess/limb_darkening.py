@@ -22,7 +22,7 @@ def get_ld_coefficients(tic_id, meta):
         return cfg.LD_DEFAULT[0], cfg.LD_DEFAULT[1]
         
     try:
-        df = pd.read_parquet(ld_table_path)
+        df = _load_ld_table(str(ld_table_path))
         
         # Simple nearest neighbor lookup in Teff, logg, and FeH space
         # Assuming the table has columns: 'teff', 'logg', 'feh', 'u1', 'u2'
