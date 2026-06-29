@@ -70,7 +70,7 @@ def download_batch(tic_ids, workers=5):
     print(f"Starting TESS download for {len(tic_ids)} targets (fetching all available sectors)...")
     all_catalog_rows = []
     
-    with ThreadPoolExecutor(max_workers=1) as executor:
+    with ThreadPoolExecutor(max_workers=workers) as executor:
         futures = {executor.submit(download_star_all_sectors, tic): tic for tic in tic_ids}
         for i, future in enumerate(as_completed(futures), 1):
             rows = future.result()
