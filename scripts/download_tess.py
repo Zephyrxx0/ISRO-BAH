@@ -46,13 +46,14 @@ def download_star_all_sectors(tic_id):
                 'exclusion_reason': 'NONE'
             }
             
+            # Restored keyword contract names to match pipeline/ingest/store.py exactly
             save_lc_npz(
                 tic_id=tic_id,
                 sector=sector,
-                time=lc.time.value,
-                flux=lc.flux.value,
+                time_arr=lc.time.value,
+                flux_arr=lc.flux.value,
                 flux_err=lc.flux_err.value,
-                quality=lc.quality,
+                quality_arr=lc.quality,
                 meta=meta,
                 kind='raw'
             )
