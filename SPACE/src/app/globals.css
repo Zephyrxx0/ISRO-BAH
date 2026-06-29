@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+:root {
+  --background: #FAFAFA;
+  --foreground: #18181B;
+  --border: #18181B;
+  
+  /* Strict accents */
+  --signal-green: #22C55E;
+  --warning-amber: #F59E0B;
+  --blending-red: #EF4444;
+  --raw-zinc: #71717A;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border-brutal: var(--border);
+  --color-signal-green: var(--signal-green);
+  --color-warning-amber: var(--warning-amber);
+  --color-blending-red: var(--blending-red);
+  --color-raw-zinc: var(--raw-zinc);
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Force light mode styles regardless of OS preference */
+html {
+  color-scheme: light;
+}
+
+body {
+  background-color: #FAFAFA;
+  /* Grid pattern: sharp 1px grid lines every 24px */
+  background-image: 
+    linear-gradient(to right, rgba(24, 24, 27, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(24, 24, 27, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: #18181B;
+  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+/* Custom Scrollbar for brutalist terminal vibe */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #FAFAFA;
+  border-left: 1px solid #18181B;
+  border-top: 1px solid #18181B;
+}
+::-webkit-scrollbar-thumb {
+  background: #18181B;
+  border: 1px solid #FAFAFA;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #71717A;
+}
+
+/* Custom Leaflet Map Inversion Style for Celestial Radar */
+.celestial-map-container {
+  border: 1px solid #18181B;
+}
+
+.celestial-map-container .leaflet-tile-container {
+  /* Invert color scheme of the map to make it white-on-black or custom monochrome grid */
+  filter: invert(1) contrast(1.1) brightness(0.85) saturate(0);
+}
+
+.celestial-map-container .leaflet-container {
+  background: #18181B !important;
+}
+
+.celestial-map-container .leaflet-bar {
+  border: 1px solid #18181B !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+.celestial-map-container .leaflet-bar a {
+  border-radius: 0 !important;
+  border-bottom: 1px solid #18181B !important;
+  background: #FAFAFA !important;
+  color: #18181B !important;
+  font-family: var(--font-geist-mono), monospace !important;
+  font-weight: bold !important;
+}
+
+.celestial-map-container .leaflet-bar a:hover {
+  background: #18181B !important;
+  color: #FAFAFA !important;
+}
+
+/* Leaflet control container customization */
+.leaflet-control-attribution {
+  font-size: 7px !important;
+  text-transform: uppercase;
+  background: rgba(250, 250, 250, 0.8) !important;
+  border-left: 1px solid #18181B !important;
+  border-top: 1px solid #18181B !important;
+  color: #71717A !important;
+}
+
+/* Plotly customization for brutalist look */
+.plotly-graph-container {
+  border: 1px solid #18181B;
+  background: #FAFAFA;
+}
+
+/* Micro-animations and utility effects */
+@keyframes signal-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.animate-signal-pulse {
+  animation: signal-pulse 2s infinite ease-in-out;
+}
+
+.brutalist-button {
+  background: #FAFAFA;
+  border: 1px solid #18181B;
+  padding: 4px 8px;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.1s ease;
+}
+
+.brutalist-button:hover {
+  background: #18181B;
+  color: #FAFAFA;
+}
+
+.brutalist-button:active {
+  transform: translate(1px, 1px);
+}
