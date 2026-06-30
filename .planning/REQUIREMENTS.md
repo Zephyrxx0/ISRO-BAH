@@ -63,7 +63,7 @@ Requirements for the 30-hour hackathon grand finale. Each maps to pipeline stage
 - [ ] **PARM-03**: MCMC output reports median ± 1σ (16th/84th percentile) for orbital period P, transit duration T₁₄, transit depth δ, Rp/Rs, inclination
 - [ ] **PARM-04**: MCMC chains validated with acceptance fraction 0.2–0.5; non-converging chains fall back to Nelder-Mead fit
 - [ ] **PARM-05**: Pipeline generates corner plot (corner package) showing 2D posterior distributions with 1σ, 2σ contours per MCMC candidate
-- [ ] **PARM-06**: Parameter recovery validated against published values: period within 0.1% for SNR > 10, depth within 5%, duration within 10%
+- [x] **PARM-06**: Parameter recovery validated against published values: period within 0.1% for SNR > 10, depth within 5%, duration within 10%
 
 ### Validation
 
@@ -169,7 +169,7 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 | PARM-03 | Phase 3 | Pending |
 | PARM-04 | Phase 3 | Pending |
 | PARM-05 | Phase 3 | Pending |
-| PARM-06 | Phase 3 | Pending |
+| PARM-06 | Phase 3 | Complete |
 | VAL-01 | Phase 3 | Pending |
 | VAL-02 | Phase 3 | Pending |
 | VAL-03 | Phase 3 | Pending |
@@ -190,6 +190,7 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 | MLOP-02 | Phase 2 | Pending |
 
 **Coverage:**
+
 - v1 requirements: 55 total
 - Mapped to phases: 55
 - Unmapped: 0
