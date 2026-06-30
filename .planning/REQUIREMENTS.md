@@ -67,9 +67,9 @@ Requirements for the 30-hour hackathon grand finale. Each maps to pipeline stage
 
 ### Validation
 
-- [ ] **VAL-01**: Pre-pipeline validation pass on Day 1 confirms recovery of WASP-121b (P=1.27d, Sector 1)
-- [ ] **VAL-02**: Pipeline validates multi-planet recovery on TOI-270 (3 planets, Sector 3) and L 98-59 (3 planets, Sector 2)
-- [ ] **VAL-03**: Pipeline validates small-planet detection on TOI-700 d (Sector 4 or equivalent shallow transit target in Sectors 1-3)
+- [x] **VAL-01**: Pre-pipeline validation pass on Day 1 confirms recovery of WASP-121b (P=1.27d, Sector 1)
+- [x] **VAL-02**: Pipeline validates multi-planet recovery on TOI-270 (3 planets, Sector 3) and L 98-59 (3 planets, Sector 2)
+- [x] **VAL-03**: Pipeline validates small-planet detection on TOI-700 d (Sector 4 or equivalent shallow transit target in Sectors 1-3)
 - [ ] **VAL-04**: TRICERATOPS+ computes FPP and NFPP on top 5 Gold planet candidates; reports FPP < 1.5% and NFPP < 0.1% as Validated Planet thresholds
 - [ ] **VAL-05**: SHERLOCK benchmark comparison on top 5 candidates (independent verification, cited against 98% TOI recovery rate)
 
@@ -170,9 +170,9 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 | PARM-04 | Phase 3 | Complete |
 | PARM-05 | Phase 3 | Complete |
 | PARM-06 | Phase 3 | Complete |
-| VAL-01 | Phase 3 | Pending |
-| VAL-02 | Phase 3 | Pending |
-| VAL-03 | Phase 3 | Pending |
+| VAL-01 | Phase 3 | Complete |
+| VAL-02 | Phase 3 | Complete |
+| VAL-03 | Phase 3 | Complete |
 | VAL-04 | Phase 3 | Pending |
 | VAL-05 | Phase 3 | Pending |
 | VIS-01 | Phase 3 | Pending |
