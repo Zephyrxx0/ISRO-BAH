@@ -21,17 +21,12 @@ def apply_gp_detrend(time, flux, flux_err, jitter=1e-6):
         sigma=np.nanstd(y) * 0.5,
         rho=np.ptp(time) * 0.1
     )
-    kernel += terms.JitterTerm(log_sigma=np.log(jitter))
+    yerr = np.sqrt(flux_err**2 + jitter**2)
 
     gp = celerite2.GaussianProcess(kernel, mean=0.0)
-    gp.compute(time, yerr=flux_err)
+    gp.compute(time, yerr=yerr)
 
-    try:
-        gp.optimize(time, flux_err, y, quiet=True)
-    except Exception:
-        pass
-
-    mu, _ = gp.predict(y, time, return_cov=False)
+    mu = gp.predict(y, time, return_cov=False)
     trend = mu + median_flux
     detrended_flux = flux - mu
 
