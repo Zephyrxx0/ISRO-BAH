@@ -6,7 +6,7 @@ Four vertically-integrated phases deliver an end-to-end ML pipeline that ingests
 
 ## Phases
 
-- [ ] **Phase 1: Foundation** — Data ingestion, preprocessing, and TLS period search on 60k light curves
+- [x] **Phase 1: Foundation** — Data ingestion, preprocessing, and TLS period search on 60k light curves
 - [ ] **Phase 2: Intelligence** — Feature extraction, CNN+XGBoost ensemble training, calibrated confidence scores
 - [ ] **Phase 3: Characterization** — Two-gate MCMC parameter estimation, validation on known exoplanets, diagnostic visualizations
 - [ ] **Phase 4: Presentation** — Interactive Next.js dashboard, candidate catalogue CSV, 4-page PDF report
@@ -69,7 +69,7 @@ Phases 1–3 are strictly sequential (hard data dependencies). Phase 4 can begin
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Foundation | 0/0 | Not started | - |
+| 1. Foundation | 1/1 | Complete | 2026-07-01 |
 | 2. Intelligence | 0/5 | Planned | - |
 | 3. Characterization | 0/0 | Not started | - |
 | 4. Presentation | 0/0 | Not started | - |
