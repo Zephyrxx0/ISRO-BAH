@@ -10,6 +10,21 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 CHECKPOINT_PATH = cfg.OUTPUTS_DIR / 'tls_checkpoint.json'
 
+
+def _safe_float_attr(obj, name, default=0.0):
+    """Safely extract a scalar float from an object attribute, handling non-scalar arrays."""
+    try:
+        val = getattr(obj, name, None)
+        if val is None:
+            return default
+        val = np.atleast_1d(val).ravel()
+        if len(val) == 0:
+            return default
+        return float(val[0])
+    except (TypeError, ValueError, IndexError):
+        return default
+
+
 def run_tls_single(args):
     """Run TLS search for a single star. Returns a list of result dicts (one per planet/iteration)."""
     tic_id, sector, u1, u2 = args
@@ -58,8 +73,8 @@ def run_tls_single(args):
                 'sde': float(res.SDE),
                 'snr': float(res.snr),
                 'cdpp': float(getattr(res, 'cdpp', 0.0)),
-                'chi2': float(getattr(res, 'chi2', 0.0)),
-                'chi2_red': float(getattr(res, 'chi2_red', 0.0))
+                'chi2': _safe_float_attr(res, 'chi2'),
+                'chi2_red': _safe_float_attr(res, 'chi2_red')
             }
             results.append(res_dict)
             
