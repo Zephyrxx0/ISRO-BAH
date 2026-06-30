@@ -58,7 +58,7 @@ Requirements for the 30-hour hackathon grand finale. Each maps to pipeline stage
 
 ### Parameter Estimation
 
-- [ ] **PARM-01**: Pipeline runs batman Mandel-Agol transit model (scipy Nelder-Mead fit) on candidates with SDE ≥ 7 AND PC confidence > 0.70
+- [x] **PARM-01**: Pipeline runs batman Mandel-Agol transit model (scipy Nelder-Mead fit) on candidates with SDE ≥ 7 AND PC confidence > 0.70
 - [ ] **PARM-02**: Pipeline runs full emcee MCMC (32 walkers, 5000 steps) on top 15 Gold candidates ranked by SDE × PC confidence, gated on PC confidence > 0.85
 - [ ] **PARM-03**: MCMC output reports median ± 1σ (16th/84th percentile) for orbital period P, transit duration T₁₄, transit depth δ, Rp/Rs, inclination
 - [ ] **PARM-04**: MCMC chains validated with acceptance fraction 0.2–0.5; non-converging chains fall back to Nelder-Mead fit
@@ -164,7 +164,7 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 | CONF-01 | Phase 2 | Pending |
 | CONF-02 | Phase 2 | Pending |
 | CONF-03 | Phase 2 | Pending |
-| PARM-01 | Phase 3 | Pending |
+| PARM-01 | Phase 3 | Complete |
 | PARM-02 | Phase 3 | Pending |
 | PARM-03 | Phase 3 | Pending |
 | PARM-04 | Phase 3 | Pending |
