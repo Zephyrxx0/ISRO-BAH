@@ -6,3 +6,6 @@ claude-roadmap.md
 .agents
 .gemini
 .firecrawl
+
+
+__pycache__/
