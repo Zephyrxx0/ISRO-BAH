@@ -59,10 +59,10 @@ Requirements for the 30-hour hackathon grand finale. Each maps to pipeline stage
 ### Parameter Estimation
 
 - [x] **PARM-01**: Pipeline runs batman Mandel-Agol transit model (scipy Nelder-Mead fit) on candidates with SDE ≥ 7 AND PC confidence > 0.70
-- [ ] **PARM-02**: Pipeline runs full emcee MCMC (32 walkers, 5000 steps) on top 15 Gold candidates ranked by SDE × PC confidence, gated on PC confidence > 0.85
-- [ ] **PARM-03**: MCMC output reports median ± 1σ (16th/84th percentile) for orbital period P, transit duration T₁₄, transit depth δ, Rp/Rs, inclination
-- [ ] **PARM-04**: MCMC chains validated with acceptance fraction 0.2–0.5; non-converging chains fall back to Nelder-Mead fit
-- [ ] **PARM-05**: Pipeline generates corner plot (corner package) showing 2D posterior distributions with 1σ, 2σ contours per MCMC candidate
+- [x] **PARM-02**: Pipeline runs full emcee MCMC (32 walkers, 5000 steps) on top 15 Gold candidates ranked by SDE × PC confidence, gated on PC confidence > 0.85
+- [x] **PARM-03**: MCMC output reports median ± 1σ (16th/84th percentile) for orbital period P, transit duration T₁₄, transit depth δ, Rp/Rs, inclination
+- [x] **PARM-04**: MCMC chains validated with acceptance fraction 0.2–0.5; non-converging chains fall back to Nelder-Mead fit
+- [x] **PARM-05**: Pipeline generates corner plot (corner package) showing 2D posterior distributions with 1σ, 2σ contours per MCMC candidate
 - [x] **PARM-06**: Parameter recovery validated against published values: period within 0.1% for SNR > 10, depth within 5%, duration within 10%
 
 ### Validation
@@ -165,10 +165,10 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 | CONF-02 | Phase 2 | Pending |
 | CONF-03 | Phase 2 | Pending |
 | PARM-01 | Phase 3 | Complete |
-| PARM-02 | Phase 3 | Pending |
-| PARM-03 | Phase 3 | Pending |
-| PARM-04 | Phase 3 | Pending |
-| PARM-05 | Phase 3 | Pending |
+| PARM-02 | Phase 3 | Complete |
+| PARM-03 | Phase 3 | Complete |
+| PARM-04 | Phase 3 | Complete |
+| PARM-05 | Phase 3 | Complete |
 | PARM-06 | Phase 3 | Complete |
 | VAL-01 | Phase 3 | Pending |
 | VAL-02 | Phase 3 | Pending |
