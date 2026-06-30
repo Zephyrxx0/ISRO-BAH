@@ -77,7 +77,7 @@ Requirements for the 30-hour hackathon grand finale. Each maps to pipeline stage
 
 - [ ] **VIS-01**: Pipeline generates 4-panel diagnostic plot per SDE ≥ 7 candidate: (1) raw + detrended light curve with transit epochs, (2) TLS periodogram with peak annotated, (3) phase-folded light curve + batman model overlaid with residuals, (4) classifier softmax bar chart
 - [ ] **VIS-02**: Diagnostic plots exported as PNG (publication-quality, 150 dpi) and interactive HTML (Plotly)
-- [ ] **VIS-03**: Pipeline generates completeness map: recovery fraction as function of transit depth (50–2000 ppm) and orbital period, from synthetic injection results
+- [x] **VIS-03**: Pipeline generates completeness map: recovery fraction as function of transit depth (50–2000 ppm) and orbital period, from synthetic injection results
 
 ### Dashboard
 
@@ -177,7 +177,7 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 | VAL-05 | Phase 3 | Pending |
 | VIS-01 | Phase 3 | Pending |
 | VIS-02 | Phase 3 | Pending |
-| VIS-03 | Phase 3 | Pending |
+| VIS-03 | Phase 3 | Complete |
 | DASH-01 | Phase 4 | Pending |
 | DASH-02 | Phase 4 | Pending |
 | DASH-03 | Phase 4 | Pending |
