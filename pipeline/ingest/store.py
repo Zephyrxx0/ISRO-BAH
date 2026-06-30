@@ -5,8 +5,8 @@ import pipeline.config as cfg
 
 def npz_path(tic_id, sector, kind='raw'):
     """Return Path object for a given TIC ID and sector."""
-    # Assuming baseline signature exists from repo context
-    ...
+    base = cfg.RAW_DIR if kind == 'raw' else cfg.PREP_DIR
+    return base / f"tic{tic_id:016d}_s{sector:04d}_{kind}.npz"
 
 def save_lc_npz(tic_id, sector, time, flux, flux_err, quality, meta, kind='raw'):
     """Save lightcurve data to compressed npz file, serializing meta as JSON."""
