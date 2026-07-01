@@ -1,0 +1,226 @@
+@import "tailwindcss";
+@import "shadcn/tailwind.css";
+
+/* ─── BRUTALIST TACTICAL TELEMETRY ─── */
+
+@theme inline {
+  --color-background: var(--bg);
+  --color-foreground: var(--fg);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+
+  --color-card: var(--surface);
+  --color-card-foreground: var(--fg);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--fg);
+  --color-primary: var(--accent);
+  --color-primary-foreground: var(--fg);
+  --color-secondary: var(--panel);
+  --color-secondary-foreground: var(--fg);
+  --color-muted: var(--panel);
+  --color-muted-foreground: var(--fg-dim);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--fg);
+  --color-destructive: var(--accent);
+  --color-destructive-foreground: var(--fg);
+  --color-border: var(--border-color);
+  --color-input: var(--panel);
+  --color-ring: var(--accent);
+  --color-terminal-green: var(--terminal-green);
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
+  --radius-xl: 0;
+}
+
+:root,
+.dark {
+  --bg: #0a0a0a;
+  --fg: #eaeaea;
+  --fg-dim: #999999;
+  --accent: #e61919;
+  --surface: #0d0d0d;
+  --panel: #141414;
+  --border-color: #2a2a2a;
+  --terminal-green: #4af626;
+  --radius: 0;
+}
+
+/* ─── CRT SCANLINE OVERLAY ─── */
+
+@layer base {
+  body {
+    @apply bg-[var(--bg)] text-[var(--fg)] font-mono antialiased;
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.06) 2px,
+      rgba(0, 0, 0, 0.06) 4px
+    );
+  }
+}
+
+/* ─── NOISE TEXTURE ─── */
+
+@layer base {
+  body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    pointer-events: none;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+}
+
+/* ─── SELECTION ─── */
+
+::selection {
+  background: var(--accent);
+  color: var(--fg);
+}
+
+/* ─── SCROLLBAR ─── */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--panel);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-dim);
+}
+
+/* ─── FOCUS ─── */
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--fg-dim);
+}
+
+.brutalist-slider {
+  appearance: none;
+  background: var(--border-color);
+  height: 2px;
+  outline: none;
+}
+.brutalist-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 8px;
+  height: 16px;
+  background: var(--fg);
+  cursor: pointer;
+  border-radius: 0;
+}
+.brutalist-slider::-moz-range-thumb {
+  width: 8px;
+  height: 16px;
+  background: var(--fg);
+  cursor: pointer;
+  border-radius: 0;
+  border: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ─── RADAR MARKER ANIMATIONS ─── */
+.radar-marker {
+  position: relative;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: crosshair;
+}
+.radar-ring, .radar-x, .radar-y, .radar-backdrop {
+  position: absolute;
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.radar-backdrop {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 70%);
+  z-index: 0;
+}
+.radar-ring {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px dashed rgba(255, 255, 255, 0.8);
+  background: transparent;
+  box-sizing: border-box;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.2);
+  z-index: 1;
+}
+.radar-x {
+  width: 12px;
+  height: 1.5px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  z-index: 1;
+}
+.radar-y {
+  width: 1.5px;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+  z-index: 1;
+}
+
+/* Active State */
+.radar-marker.selected .radar-backdrop {
+  width: 36px;
+  height: 36px;
+  background: radial-gradient(circle, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0) 70%);
+}
+.radar-marker.selected .radar-ring {
+  width: 28px;
+  height: 28px;
+  border: 1.5px solid var(--active-color);
+  background: color-mix(in srgb, var(--active-color) 20%, transparent);
+}
+.radar-marker.selected .radar-x {
+  width: 16px;
+  height: 2px;
+  background: var(--active-color);
+  box-shadow: 0 0 6px var(--active-color);
+}
+.radar-marker.selected .radar-y {
+  width: 2px;
+  height: 16px;
+  background: var(--active-color);
+  box-shadow: 0 0 6px var(--active-color);
+}
