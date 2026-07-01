@@ -1,11 +1,7 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useRef } from 'react';
-import { PipelinePayload } from '../../outputs/integration-schema';
-import { Terminal, Play, RotateCcw } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { useEffect, useState, useRef } from "react";
+import { PipelinePayload } from "../../outputs/integration-schema";
 
 interface SimulationPanelProps {
   currentHour: number;
@@ -16,7 +12,7 @@ interface SimulationPanelProps {
 export default function SimulationPanel({
   currentHour,
   onChangeHour,
-  payload
+  payload,
 }: SimulationPanelProps) {
   const [logs, setLogs] = useState<string[]>([]);
   const consoleEndRef = useRef<HTMLDivElement>(null);
@@ -26,103 +22,114 @@ export default function SimulationPanel({
     if (currentHour === 0) {
       setLogs([
         `[${time}] [SYS_INIT] EXOPLANET SIGNAL ENGINE BOOTSTRAP COMPLETE.`,
-        `[${time}] [DAT_LOAD] LOADING TESS LIGHT CURVE ARCHIVES (SECTORS 1-26).`,
+        `[${time}] [DAT_LOAD] LOADING TESS LIGHT CURVE ARCHIVES (SECTORS 1-3).`,
         `[${time}] [WARN] HIGH NOISE LEVEL DETECTED: UN-DETRENDED DATA MATRIX ACTIVE.`,
         `[${time}] [WARN] TRICERATOPS MCMC COMPUTE IS PENDING GPU ALLOCATION.`,
-        `[${time}] [WARN] SHERLOCK RECOVERY TIMEOUT ON LOW SNR TARGETS (TIC 150428135).`,
-        `[${time}] [SYS_WAIT] STATUS: STANDBY. AWAITING HOUR 18 DE-NOISED INFERENCE LAYER...`
+        `[${time}] [WARN] SHERLOCK RECOVERY TIMEOUT ON LOW SNR TARGETS.`,
+        `[${time}] [SYS_WAIT] STATUS: STANDBY. AWAITING HOUR 18 DE-NOISED INFERENCE...`,
       ]);
     } else {
       setLogs([
         `[${time}] [SYS_INIT] PIPELINE INFERENCE TRIGGERS AUTOMATIC RE-RUN.`,
         `[${time}] [PROC_DETREND] APPLIED BIWEIGHT DETRENDING & SHIELD FILTER OVERLAYS.`,
-        `[${time}] [PROC_MCMC] TRICERATOPS RUNNING: 1,000,000 MCMC SAMPLE GENERATIONS COMPLETE.`,
+        `[${time}] [PROC_MCMC] TRICERATOPS RUNNING: 1,000,000 MCMC SAMPLES COMPLETE.`,
         `[${time}] [PROC_SHERLOCK] SHERLOCK COMPLETED BLEND AND PERIODICITY STABILITY SWEEPS.`,
         `[${time}] [SYS_SYNC] HOUR 18 INFERENCE METRICS LANDED AT FRONTEND MEMORY BUFFER.`,
         `[${time}] [SYS_SUCCESS] PIPELINE TARGETS RE-VALUATED: GOLD:[3] SILVER:[0] BRONZE:[0] FP:[2]`,
-        `[${time}] [SYS_STREAM] STREAMING REAL-TIME SPECTRAL PARAMETRIC COEFFICIENTS...`
+        `[${time}] [SYS_STREAM] STREAMING REAL-TIME SPECTRAL PARAMETRIC COEFFICIENTS...`,
       ]);
     }
   }, [currentHour, payload.timestamp]);
 
   useEffect(() => {
     if (consoleEndRef.current) {
-      consoleEndRef.current.scrollIntoView({ behavior: 'smooth' });
+      consoleEndRef.current.scrollIntoView({ behavior: "auto" });
     }
   }, [logs]);
 
   const isH18 = currentHour >= 18;
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="border-b border-border bg-muted/20 pb-4">
-        <CardTitle className="text-sm flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Terminal className="w-4 h-4" />
-            INTEGRATION CONTROL
-          </div>
-          <Badge variant={isH18 ? "default" : "secondary"} className={isH18 ? 'bg-green-500 hover:bg-green-600' : ''}>
-            {isH18 ? 'STREAMING' : 'STANDBY'}
-          </Badge>
-        </CardTitle>
-      </CardHeader>
+    <div className="h-full flex flex-col border border-[var(--border-color)] bg-[var(--surface)]">
+      {/* HEADER */}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-[var(--border-color)] bg-[var(--panel)]">
+        <span className="font-mono text-[10px] tracking-widest text-[var(--fg-dim)]">
+          [ INTEGRATION CONTROL ]
+        </span>
+        <span
+          className={`font-mono text-[10px] tracking-widest font-bold ${
+            isH18 ? "text-[var(--terminal-green)]" : "text-[var(--fg-dim)]"
+          }`}
+        >
+          {isH18 ? "STREAMING" : "STANDBY"}
+        </span>
+      </div>
 
-      <CardContent className="flex-1 flex flex-col justify-between p-6 space-y-6">
-        <div className="grid grid-cols-2 gap-4">
-          <Button
-            variant={!isH18 ? "secondary" : "outline"}
+      <div className="flex-1 flex flex-col p-4 space-y-4">
+        {/* CONTROLS */}
+        <div className="grid grid-cols-2 gap-2">
+          <button
             onClick={() => onChangeHour(0)}
-            className="w-full text-xs font-semibold"
+            className={`font-mono text-[10px] tracking-widest px-3 py-2 border transition-colors ${
+              !isH18
+                ? "bg-[var(--accent)] border-[var(--accent)] text-[var(--fg)]"
+                : "border-[var(--border-color)] text-[var(--fg-dim)] hover:text-[var(--fg)] hover:border-[var(--fg-dim)]"
+            }`}
           >
-            <RotateCcw className="w-4 h-4 mr-2" />
-            Hour 0 (Baseline)
-          </Button>
-          <Button
-            variant={isH18 ? "default" : "outline"}
+            [ H00 BASELINE ]
+          </button>
+          <button
             onClick={() => onChangeHour(18)}
-            className={`w-full text-xs font-semibold ${isH18 ? 'bg-green-500 hover:bg-green-600 text-white' : ''}`}
+            className={`font-mono text-[10px] tracking-widest px-3 py-2 border transition-colors ${
+              isH18
+                ? "bg-[var(--terminal-green)] border-[var(--terminal-green)] text-[var(--bg)] font-bold"
+                : "border-[var(--border-color)] text-[var(--fg-dim)] hover:text-[var(--fg)] hover:border-[var(--fg-dim)]"
+            }`}
           >
-            <Play className="w-4 h-4 mr-2" />
-            Hour 18 (Inference)
-          </Button>
+            [ H18 INFERENCE ]
+          </button>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 bg-muted/30 border border-border p-4 rounded-md text-sm">
-          <div>
-            <div className="text-xs text-muted-foreground uppercase mb-1">Payload Timestamp</div>
-            <div className="font-semibold truncate">{payload.timestamp}</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground uppercase mb-1">Pipeline Version</div>
-            <div className="font-semibold">{payload.pipelineVersion}</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground uppercase mb-1">Active Candidates</div>
-            <div className="font-semibold">{Object.keys(payload.candidates).length} Targets</div>
-          </div>
-          <div>
-            <div className="text-xs text-muted-foreground uppercase mb-1">Simulation Time</div>
-            <div className="font-semibold">H{currentHour.toString().padStart(2, '0')}:00</div>
-          </div>
+        {/* TELEMETRY */}
+        <div className="grid grid-cols-2 gap-1 bg-[var(--border-color)]">
+          {[
+            ["PAYLOAD", payload.timestamp],
+            ["VERSION", payload.pipelineVersion],
+            [
+              "TARGETS",
+              `${Object.keys(payload.candidates).length} ACTIVE`,
+            ],
+            ["SIM TIME", `H${currentHour.toString().padStart(2, "0")}:00`],
+          ].map(([label, value]) => (
+            <div key={label} className="bg-[var(--panel)] p-2">
+              <span className="block font-mono text-[8px] text-[var(--fg-dim)] tracking-widest mb-0.5">
+                {label}
+              </span>
+              <span className="font-mono text-[11px] text-[var(--fg)] tabular-nums font-bold">
+                {value}
+              </span>
+            </div>
+          ))}
         </div>
 
-        <div className="flex-1 flex flex-col min-h-[160px]">
-          <span className="text-xs text-muted-foreground uppercase font-semibold mb-2 block">
-            Terminal Pipeline Buffer
+        {/* TERMINAL BUFFER */}
+        <div className="flex-1 flex flex-col min-h-[140px]">
+          <span className="font-mono text-[9px] text-[var(--fg-dim)] tracking-widest mb-2">
+            [ TERMINAL PIPELINE BUFFER ]
           </span>
-          <div className="flex-1 bg-black rounded-md border border-border p-3 font-mono text-xs overflow-y-auto space-y-1.5 h-full">
+          <div className="flex-1 bg-[var(--bg)] border border-[var(--border-color)] p-3 font-mono text-[11px] overflow-y-auto space-y-1">
             {logs.map((log, idx) => (
-              <div 
-                key={idx} 
-                className={`${
-                  log.includes('[WARN]') 
-                    ? 'text-yellow-400' 
-                    : log.includes('[SYS_SUCCESS]') 
-                    ? 'text-green-400' 
-                    : log.includes('[CRITICAL]') 
-                    ? 'text-red-400' 
-                    : 'text-slate-300'
-                }`}
+              <div
+                key={idx}
+                className={
+                  log.includes("[WARN]")
+                    ? "text-[#b45309]"
+                    : log.includes("[SYS_SUCCESS]")
+                      ? "text-[var(--terminal-green)]"
+                      : log.includes("[CRITICAL]")
+                        ? "text-[var(--accent)]"
+                        : "text-[var(--fg-dim)]"
+                }
               >
                 {log}
               </div>
@@ -130,7 +137,7 @@ export default function SimulationPanel({
             <div ref={consoleEndRef} />
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

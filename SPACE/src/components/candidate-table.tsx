@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import * as React from 'react';
+import * as React from "react";
 import {
   ColumnFiltersState,
   SortingState,
@@ -10,7 +10,7 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 
 import {
   Table,
@@ -19,19 +19,10 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+} from "@/components/ui/table";
 
-import { candidateColumns } from './candidate-columns';
-import { AstronomicalSignal } from '../../outputs/integration-schema';
+import { candidateColumns } from "./candidate-columns";
+import { AstronomicalSignal } from "../../outputs/integration-schema";
 
 interface CandidateTableProps {
   candidates: AstronomicalSignal[];
@@ -39,13 +30,24 @@ interface CandidateTableProps {
   onSelectCandidate: (ticId: string) => void;
 }
 
+const TIER_OPTIONS = [
+  { value: "ALL", label: "ALL TIERS" },
+  { value: "GOLD", label: "GOLD" },
+  { value: "SILVER", label: "SILVER" },
+  { value: "BRONZE", label: "BRONZE" },
+  { value: "FALSE_POSITIVE", label: "FALSE POSITIVE" },
+];
+
 export default function CandidateTable({
   candidates,
   selectedTicId,
   onSelectCandidate,
 }: CandidateTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    []
+  );
+  const [tierFilter, setTierFilter] = React.useState("ALL");
 
   const table = useReactTable({
     data: candidates,
@@ -68,53 +70,78 @@ export default function CandidateTable({
     },
   });
 
+  const handleTierChange = (value: string) => {
+    setTierFilter(value);
+    if (value === "ALL") {
+      table.getColumn("confidenceTier")?.setFilterValue("");
+    } else {
+      table.getColumn("confidenceTier")?.setFilterValue(value);
+    }
+  };
+
+  const pageCount = table.getPageCount();
+  const pageIndex = table.getState().pagination.pageIndex;
+
   return (
-    <div className="w-full space-y-4">
-      <div className="flex flex-col sm:flex-row items-center gap-4">
-        <Input
-          placeholder="Filter by TIC ID..."
-          value={(table.getColumn('ticId')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('ticId')?.setFilterValue(event.target.value)
+    <div className="w-full">
+      {/* FILTERS */}
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-[var(--border-color)] bg-[var(--panel)]">
+        <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest mr-2">
+          FILTER //
+        </span>
+        <input
+          placeholder="TIC ID..."
+          value={
+            (table.getColumn("ticId")?.getFilterValue() as string) ?? ""
           }
-          className="max-w-sm"
+          onChange={(e) =>
+            table.getColumn("ticId")?.setFilterValue(e.target.value)
+          }
+          className="font-mono text-xs bg-[var(--surface)] border border-[var(--border-color)] text-[var(--fg)] px-2 py-1 w-40 focus:outline-none focus:border-[var(--fg-dim)] placeholder:text-[var(--fg-dim)]/40"
         />
-        <Select
-          onValueChange={(value) => {
-            if (value === 'ALL') table.getColumn('confidenceTier')?.setFilterValue('');
-            else table.getColumn('confidenceTier')?.setFilterValue(value);
-          }}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Tiers" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="ALL">All Tiers</SelectItem>
-            <SelectItem value="GOLD">Gold</SelectItem>
-            <SelectItem value="SILVER">Silver</SelectItem>
-            <SelectItem value="BRONZE">Bronze</SelectItem>
-            <SelectItem value="FALSE_POSITIVE">False Positive</SelectItem>
-          </SelectContent>
-        </Select>
+        <span className="text-[var(--border-color)] font-mono text-xs">//</span>
+        <div className="flex gap-1">
+          {TIER_OPTIONS.map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => handleTierChange(opt.value)}
+              className={`font-mono text-[10px] tracking-widest px-2 py-1 border transition-colors ${
+                tierFilter === opt.value
+                  ? "bg-[var(--accent)] border-[var(--accent)] text-[var(--fg)]"
+                  : "border-[var(--border-color)] text-[var(--fg-dim)] hover:text-[var(--fg)] hover:border-[var(--fg-dim)]"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+        <span className="ml-auto font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+          {table.getFilteredRowModel().rows.length} / {candidates.length} ROWS
+        </span>
       </div>
 
-      <div className="rounded-md border bg-card">
+      {/* TABLE */}
+      <div className="border-b border-[var(--border-color)] bg-[var(--surface)]">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  return (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                    </TableHead>
-                  );
-                })}
+              <TableRow
+                key={headerGroup.id}
+                className="border-b border-[var(--border-color)] hover:bg-transparent"
+              >
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="h-8 px-4 py-1 bg-[var(--panel)] text-left"
+                  >
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
               </TableRow>
             ))}
           </TableHeader>
@@ -125,12 +152,16 @@ export default function CandidateTable({
                 return (
                   <TableRow
                     key={row.id}
-                    data-state={isSelected ? 'selected' : undefined}
-                    className={`cursor-pointer ${isSelected ? 'bg-muted/50 border-l-2 border-primary' : ''}`}
+                    data-state={isSelected ? "selected" : undefined}
+                    className={`cursor-pointer border-b border-[var(--border-color)] transition-colors ${
+                      isSelected
+                        ? "bg-[var(--accent)]/10 border-l-[3px] border-l-[var(--accent)]"
+                        : "hover:bg-[var(--panel)]/50"
+                    }`}
                     onClick={() => onSelectCandidate(row.original.ticId)}
                   >
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
+                      <TableCell key={cell.id} className="px-4 py-2">
                         {flexRender(
                           cell.column.columnDef.cell,
                           cell.getContext()
@@ -146,7 +177,9 @@ export default function CandidateTable({
                   colSpan={candidateColumns.length}
                   className="h-24 text-center"
                 >
-                  No candidates match your filters
+                  <span className="font-mono text-xs text-[var(--fg-dim)]">
+                    // NO CANDIDATES MATCH FILTERS
+                  </span>
                 </TableCell>
               </TableRow>
             )}
@@ -154,23 +187,27 @@ export default function CandidateTable({
         </Table>
       </div>
 
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
+      {/* PAGINATION */}
+      <div className="flex items-center justify-between px-4 py-2 bg-[var(--panel)] border-b border-[var(--border-color)]">
+        <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+          PAGE {pageIndex + 1} / {pageCount || 1}
+        </span>
+        <div className="flex gap-1">
+          <button
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
+            className="font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-3 py-1 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            [ PREV ]
+          </button>
+          <button
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
+            className="font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-3 py-1 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          >
+            [ NEXT ]
+          </button>
+        </div>
       </div>
     </div>
   );

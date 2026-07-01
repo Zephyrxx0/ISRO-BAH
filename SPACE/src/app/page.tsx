@@ -1,25 +1,34 @@
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
-import { generateMockPayload } from '../utils/mock-generator';
-import TransitFitMatrix from '../components/transit-fit-matrix';
-import ValidationEngine from '../components/validation-engine';
-import CelestialRadar from '../components/celestial-radar';
-import SimulationPanel from '../components/simulation-panel';
-import CandidateTable from '../components/candidate-table';
-import { StatCards } from '../components/stat-cards';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useState, useMemo } from "react";
+import { generateMockPayload } from "../utils/mock-generator";
+import TransitFitMatrix from "../components/transit-fit-matrix";
+import ValidationEngine from "../components/validation-engine";
+import CelestialRadar from "../components/celestial-radar";
+import SimulationPanel from "../components/simulation-panel";
+import CandidateTable from "../components/candidate-table";
+import { StatCards } from "../components/stat-cards";
 
 export default function Home() {
   const [currentHour, setCurrentHour] = useState<number>(0);
-  const [selectedTicId, setSelectedTicId] = useState<string>('TIC 22522502');
+  const [selectedTicId, setSelectedTicId] = useState<string>("TIC 22522502");
+  const [activeTab, setActiveTab] = useState<string>("candidates");
+
+  const tabs = [
+    { id: "candidates", label: "[ CANDIDATES ]" },
+    { id: "diagnostics", label: `[ DIAGNOSTICS: ${selectedTicId} ]` },
+    { id: "map", label: "[ STAR MAP ]" },
+  ] as const;
 
   const payload = useMemo(() => {
     return generateMockPayload(currentHour);
   }, [currentHour]);
 
   const selectedCandidate = useMemo(() => {
-    return payload.candidates[selectedTicId] || Object.values(payload.candidates)[0];
+    return (
+      payload.candidates[selectedTicId] ||
+      Object.values(payload.candidates)[0]
+    );
   }, [payload, selectedTicId]);
 
   const allSignals = useMemo(() => {
@@ -31,12 +40,20 @@ export default function Home() {
   };
 
   const totalCandidates = allSignals.length;
-  const goldCount = allSignals.filter(s => s.confidenceTier === 'GOLD').length;
-  const planetCount = allSignals.filter(s => s.disposition === 'CONFIRMED_PLANET').length;
-  const avgSde = allSignals.length > 0 ? allSignals.reduce((acc, s) => acc + s.sde, 0) / allSignals.length : 0;
+  const goldCount = allSignals.filter(
+    (s) => s.confidenceTier === "GOLD"
+  ).length;
+  const planetCount = allSignals.filter(
+    (s) => s.disposition === "CONFIRMED_PLANET"
+  ).length;
+  const avgSde =
+    allSignals.length > 0
+      ? allSignals.reduce((acc, s) => acc + s.sde, 0) / allSignals.length
+      : 0;
 
   return (
-    <div className="w-full p-4 md:p-6 space-y-6">
+    <div className="w-full">
+      {/* STATS BAR */}
       <StatCards
         totalCandidates={totalCandidates}
         goldCount={goldCount}
@@ -44,49 +61,67 @@ export default function Home() {
         avgSde={avgSde}
       />
 
-      <Tabs defaultValue="candidates" className="w-full">
-        <TabsList className="mb-4 bg-secondary">
-          <TabsTrigger value="candidates" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-accent">Candidates</TabsTrigger>
-          <TabsTrigger value="diagnostics" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-accent">Diagnostics ({selectedTicId})</TabsTrigger>
-          <TabsTrigger value="map" className="data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:border-b-2 data-[state=active]:border-accent">Star Map</TabsTrigger>
-        </TabsList>
+      {/* TAB NAVIGATION */}
+      <div className="flex border-b border-[var(--border-color)] bg-[var(--panel)]">
+        {tabs.map((tab, i) => (
+          <button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            className={`font-mono text-[10px] tracking-widest px-4 py-2 transition-colors ${
+              i < tabs.length - 1
+                ? "border-r border-[var(--border-color)]"
+                : ""
+            } ${
+              activeTab === tab.id
+                ? "bg-[var(--surface)] text-[var(--fg)] border-b-2 border-b-[var(--accent)]"
+                : "text-[var(--fg-dim)] hover:text-[var(--fg)] hover:bg-[var(--surface)]"
+            }`}
+          >
+            {tab.label}
+          </button>
+        ))}
+      </div>
 
-        <TabsContent value="candidates" className="space-y-4">
-          <CandidateTable
-            candidates={allSignals}
-            selectedTicId={selectedTicId}
-            onSelectCandidate={handleSelectCandidate}
-          />
-        </TabsContent>
-
-        <TabsContent value="diagnostics" className="space-y-6">
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-            <div className="xl:col-span-2">
-              <TransitFitMatrix candidate={selectedCandidate} />
-            </div>
-            <div className="xl:col-span-1">
-              <SimulationPanel
-                currentHour={currentHour}
-                onChangeHour={setCurrentHour}
-                payload={payload}
-              />
-            </div>
+      {/* TAB CONTENT */}
+      <div className="p-0">
+        {activeTab === "candidates" && (
+          <div>
+            <CandidateTable
+              candidates={allSignals}
+              selectedTicId={selectedTicId}
+              onSelectCandidate={handleSelectCandidate}
+            />
           </div>
-          <div className="grid grid-cols-1">
+        )}
+
+        {activeTab === "diagnostics" && (
+          <div className="space-y-0">
+            <div className="grid grid-cols-1 xl:grid-cols-4">
+              <div className="xl:col-span-3">
+                <TransitFitMatrix candidate={selectedCandidate} />
+              </div>
+              <div className="xl:col-span-1">
+                <SimulationPanel
+                  currentHour={currentHour}
+                  onChangeHour={setCurrentHour}
+                  payload={payload}
+                />
+              </div>
+            </div>
             <ValidationEngine candidate={selectedCandidate} />
           </div>
-        </TabsContent>
+        )}
 
-        <TabsContent value="map" className="space-y-4">
-          <div className="h-[600px] w-full border rounded-md overflow-hidden border-border">
+        {activeTab === "map" && (
+          <div className="h-[calc(100vh-9rem)] w-full">
             <CelestialRadar
               candidates={allSignals}
               selectedTicId={selectedTicId}
               onSelectCandidate={handleSelectCandidate}
             />
           </div>
-        </TabsContent>
-      </Tabs>
+        )}
+      </div>
     </div>
   );
 }

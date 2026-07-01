@@ -1,156 +1,166 @@
-'use client';
+"use client";
 
-import { ColumnDef } from '@tanstack/react-table';
-import { AstronomicalSignal, ConfidenceTier, PipelineDisposition } from '../../outputs/integration-schema';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { ArrowUpDown } from 'lucide-react';
+import { ColumnDef } from "@tanstack/react-table";
+import {
+  AstronomicalSignal,
+  ConfidenceTier,
+  PipelineDisposition,
+} from "../../outputs/integration-schema";
 
 export const candidateColumns: ColumnDef<AstronomicalSignal>[] = [
   {
-    accessorKey: 'ticId',
-    header: 'TIC ID',
+    accessorKey: "ticId",
+    header: () => (
+      <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+        TIC ID
+      </span>
+    ),
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-[var(--fg)] tabular-nums">
+        {row.getValue("ticId") as string}
+      </span>
+    ),
   },
   {
-    accessorKey: 'name',
-    header: ({ column }) => {
+    accessorKey: "name",
+    header: () => (
+      <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+        TARGET
+      </span>
+    ),
+    cell: ({ row }) => (
+      <span className="font-sans font-bold text-xs text-[var(--fg)]">
+        {row.getValue("name") as string}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "period",
+    header: () => (
+      <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+        PERIOD (D)
+      </span>
+    ),
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-[var(--fg)] tabular-nums">
+        {(row.getValue("period") as number).toFixed(6)}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "depth",
+    header: () => (
+      <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+        DEPTH (PPT)
+      </span>
+    ),
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-[var(--fg)] tabular-nums">
+        {(row.getValue("depth") as number).toFixed(3)}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "sde",
+    header: () => (
+      <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+        SDE
+      </span>
+    ),
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-[var(--fg)] tabular-nums">
+        {(row.getValue("sde") as number).toFixed(2)}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "snr",
+    header: () => (
+      <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+        SNR
+      </span>
+    ),
+    cell: ({ row }) => (
+      <span className="font-mono text-xs text-[var(--fg)] tabular-nums">
+        {(row.getValue("snr") as number).toFixed(2)}
+      </span>
+    ),
+  },
+  {
+    accessorKey: "confidenceTier",
+    header: () => (
+      <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+        TIER
+      </span>
+    ),
+    cell: ({ row }) => {
+      const tier = row.getValue("confidenceTier") as ConfidenceTier;
+      const colors: Record<string, string> = {
+        GOLD: "border-[var(--accent)] text-[var(--accent)]",
+        SILVER: "border-[var(--fg-dim)] text-[var(--fg-dim)]",
+        BRONZE: "border-[#b45309] text-[#b45309]",
+        FALSE_POSITIVE: "border-[var(--fg-dim)] text-[var(--fg-dim)]",
+      };
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        <span
+          className={`inline-block font-mono text-[10px] tracking-widest border px-2 py-0.5 ${
+            colors[tier] || ""
+          }`}
         >
-          TARGET ID
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+          {tier}
+        </span>
       );
     },
   },
   {
-    accessorKey: 'period',
-    header: ({ column }) => {
+    accessorKey: "disposition",
+    header: () => (
+      <span className="font-mono text-[10px] text-[var(--fg-dim)] tracking-widest">
+        DISPOSITION
+      </span>
+    ),
+    cell: ({ row }) => {
+      const disp = row.getValue("disposition") as PipelineDisposition;
+      const labels: Record<string, { text: string; className: string }> = {
+        CONFIRMED_PLANET: {
+          text: "CONFIRMED PLANET",
+          className: "text-[var(--terminal-green)]",
+        },
+        BINARY_STAR_ECLIPSE: {
+          text: "ECLIPSING BINARY",
+          className: "text-[var(--accent)]",
+        },
+        BACKGROUND_STELLAR_CONTAMINATION: {
+          text: "BG BLEND",
+          className: "text-[var(--accent)]",
+        },
+      };
+      const info = labels[disp] || {
+        text: "FALSE ALARM",
+        className: "text-[var(--fg-dim)]",
+      };
       return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
+        <span
+          className={`font-mono text-[10px] tracking-widest font-bold ${info.className}`}
         >
-          PERIOD (D)
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
+          {info.text}
+        </span>
       );
     },
-    cell: ({ row }) => {
-      return <div>{(row.getValue('period') as number).toFixed(6)}</div>;
-    },
   },
   {
-    accessorKey: 'depth',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          DEPTH (PPT)
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{(row.getValue('depth') as number).toFixed(3)}</div>;
-    },
+    id: "actions",
+    header: () => null,
+    cell: ({ row, table }) => (
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          (table.options.meta as any)?.onSelectCandidate(row.original.ticId);
+        }}
+        className="font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-3 py-1 transition-colors"
+      >
+        [ INSPECT ]
+      </button>
+    ),
   },
-  {
-    accessorKey: 'sde',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          SDE
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{(row.getValue('sde') as number).toFixed(2)}</div>;
-    },
-  },
-  {
-    accessorKey: 'snr',
-    header: ({ column }) => {
-      return (
-        <Button
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}
-        >
-          SNR
-          <ArrowUpDown className="ml-2 h-4 w-4" />
-        </Button>
-      );
-    },
-    cell: ({ row }) => {
-      return <div>{(row.getValue('snr') as number).toFixed(2)}</div>;
-    },
-  },
-  {
-    accessorKey: 'confidenceTier',
-    header: 'CONFIDENCE',
-    cell: ({ row }) => {
-      const tier = row.getValue('confidenceTier') as ConfidenceTier;
-      let badgeClass = '';
-      switch (tier) {
-        case 'GOLD':
-          badgeClass = 'bg-[#f59e0b] text-black hover:bg-[#f59e0b]/80';
-          break;
-        case 'SILVER':
-          badgeClass = 'bg-[#94a3b8] text-black hover:bg-[#94a3b8]/80';
-          break;
-        case 'BRONZE':
-          badgeClass = 'bg-[#d97706] text-white hover:bg-[#d97706]/80';
-          break;
-        case 'FALSE_POSITIVE':
-          badgeClass = 'bg-red-500 text-white hover:bg-red-600';
-          break;
-      }
-      return <Badge className={badgeClass}>{tier}</Badge>;
-    },
-  },
-  {
-    accessorKey: 'disposition',
-    header: 'DISPOSITION',
-    cell: ({ row }) => {
-      const disp = row.getValue('disposition') as PipelineDisposition;
-      let label = 'FALSE ALARM';
-      let colorClass = 'text-red-500';
-      if (disp === 'CONFIRMED_PLANET') {
-        label = 'CONFIRMED';
-        colorClass = 'text-green-500';
-      } else if (disp === 'BINARY_STAR_ECLIPSE') {
-        label = 'EB ECLIPSE';
-        colorClass = 'text-yellow-500';
-      } else if (disp === 'BACKGROUND_STELLAR_CONTAMINATION') {
-        label = 'BG BLEND';
-        colorClass = 'text-red-500';
-      }
-      return <div className={`font-semibold ${colorClass}`}>{label}</div>;
-    },
-  },
-  {
-    id: 'actions',
-    cell: ({ row, table }) => {
-      return (
-        <Button 
-          variant="outline"
-          size="sm"
-          onClick={(e) => {
-            e.stopPropagation(); // Prevent row selection trigger
-            (table.options.meta as any)?.onSelectCandidate(row.original.ticId);
-          }}
-        >
-          Explore Candidate
-        </Button>
-      );
-    },
-  }
 ];
