@@ -2,6 +2,7 @@ claude-prod.md
 claude-roadmap.md
 # main.md
 .ignore
+.venv/
 
 .agents
 .gemini
@@ -18,3 +19,13 @@ data/models/
 *.h5
 *.npz
 SPACE/public/assets/
+.venv/
+
+# Project planning & docs (local only)
+AGENTS.md
+CONTEXT.md
+main.md
+REPORT.md
+
+# Verification scripts (local only)
+verify_phase2.*
