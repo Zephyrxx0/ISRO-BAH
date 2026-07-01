@@ -151,16 +151,17 @@ export const candidateColumns: ColumnDef<AstronomicalSignal>[] = [
   {
     id: "actions",
     header: () => null,
-    cell: ({ row, table }) => (
-      <button
-        onClick={(e) => {
-          e.stopPropagation();
-          (table.options.meta as any)?.onSelectCandidate(row.original.ticId);
-        }}
-        className="font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-3 py-1 transition-colors"
-      >
-        [ INSPECT ]
-      </button>
-    ),
+    cell: ({ row }) => {
+      const ticId = row.original.ticId.replace(/\s/g, "");
+      return (
+        <a
+          href={`/star/${ticId}`}
+          onClick={(e) => e.stopPropagation()}
+          className="inline-block font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-3 py-1 transition-colors no-underline"
+        >
+          [ INSPECT ]
+        </a>
+      );
+    },
   },
 ];

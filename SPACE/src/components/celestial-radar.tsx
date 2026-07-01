@@ -40,33 +40,58 @@ export default function CelestialRadar({
       return;
     const L = LRef.current;
 
+    const BOUNDS = L.latLngBounds([[-90, 0], [90, 360]]);
+
     const map = L.map(mapContainerRef.current, {
-      center: [-53.0, -80.0],
-      zoom: 3,
-      minZoom: 2,
-      maxZoom: 6,
+      crs: L.CRS.Simple,
+      center: [0, 180],
+      zoom: 0,
+      minZoom: -1,
+      maxZoom: 3,
       zoomControl: false,
       attributionControl: false,
+      maxBounds: BOUNDS,
+      maxBoundsViscosity: 1.0,
     });
 
-    L.tileLayer(
-      "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
-      {
-        attribution: "",
-      }
-    ).addTo(map);
+    // Dark background — no tile server, pure #0A0A0A canvas
+    map.getContainer().style.background = "#0A0A0A";
+
+    // Coordinate grid overlay (RA 0-360, Dec -90 to +90)
+    const gridPane = map.createPane("grid");
+    gridPane.style.pointerEvents = "none";
+    gridPane.style.zIndex = "1";
+
+    // RA grid lines every 60°
+    for (let ra = 0; ra <= 360; ra += 60) {
+      L.polyline(
+        [
+          [-90, ra],
+          [90, ra],
+        ],
+        { color: "rgba(234,234,234,0.04)", weight: 1, pane: "grid" }
+      ).addTo(map);
+    }
+    // Dec grid lines every 30°
+    for (let dec = -90; dec <= 90; dec += 30) {
+      L.polyline(
+        [
+          [dec, 0],
+          [dec, 360],
+        ],
+        { color: "rgba(234,234,234,0.04)", weight: 1, pane: "grid" }
+      ).addTo(map);
+    }
 
     // Crosshair center
     const crosshairIcon = L.divIcon({
-      html: '<div style="position:absolute;top:50%;left:50%;width:20px;height:20px;transform:translate(-50%,-50%)"><div style="position:absolute;top:50%;left:0;width:100%;height:1px;background:rgba(234,234,234,0.15)"></div><div style="position:absolute;left:50%;top:0;height:100%;width:1px;background:rgba(234,234,234,0.15)"></div></div>',
+      html: '<div style="position:absolute;top:50%;left:50%;width:20px;height:20px;transform:translate(-50%,-50%)"><div style="position:absolute;top:50%;left:0;width:100%;height:1px;background:rgba(234,234,234,0.08)"></div><div style="position:absolute;left:50%;top:0;height:100%;width:1px;background:rgba(234,234,234,0.08)"></div></div>',
       className: "",
       iconSize: [20, 20],
       iconAnchor: [10, 10],
     });
 
-    L.marker([-53.0, -80.0], { icon: crosshairIcon, interactive: false }).addTo(
-      map
-    );
+    L.marker([0, 180], { icon: crosshairIcon, interactive: false }).addTo(map);
 
     mapInstanceRef.current = map;
 
@@ -91,8 +116,8 @@ export default function CelestialRadar({
     circlesRef.current = {};
 
     candidates.forEach((cand) => {
-      const lat = cand.dec;
-      const lng = cand.ra - 180;
+      const y = cand.dec;
+      const x = cand.ra;
 
       let color = "#4af626";
       if (cand.disposition === "BINARY_STAR_ECLIPSE") {
@@ -122,15 +147,15 @@ export default function CelestialRadar({
         iconAnchor: [12, 12],
       });
 
-      const marker = L.marker([lat, lng], { icon: customIcon }).addTo(map);
+      const marker = L.marker([y, x], { icon: customIcon }).addTo(map);
       markersRef.current[cand.ticId] = marker;
 
       marker.on("click", () => {
         onSelectCandidate(cand.ticId);
       });
 
-      const circle1 = L.circle([lat, lng], {
-        radius: isSelected ? 400000 : 200000,
+      const circle1 = L.circle([y, x], {
+        radius: isSelected ? 6 : 3,
         color: color,
         weight: isSelected ? 1 : 0.5,
         fill: false,
@@ -147,9 +172,9 @@ export default function CelestialRadar({
     const map = mapInstanceRef.current;
     const selectedCand = candidates.find((c) => c.ticId === selectedTicId);
     if (selectedCand) {
-      const lat = selectedCand.dec;
-      const lng = selectedCand.ra - 180;
-      map.panTo([lat, lng], { animate: false });
+      const y = selectedCand.dec;
+      const x = selectedCand.ra;
+      map.panTo([y, x], { animate: false });
     }
   }, [selectedTicId, candidates, leafletLoaded]);
 
