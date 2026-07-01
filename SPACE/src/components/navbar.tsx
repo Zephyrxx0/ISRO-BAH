@@ -1,49 +1,58 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  navigationMenuTriggerStyle,
-} from '@/components/ui/navigation-menu';
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 export function Navbar() {
   const pathname = usePathname();
 
   const links = [
-    { href: '/', label: 'Candidates' },
-    { href: '/map', label: 'Star Map' },
-    { href: '/about', label: 'About' },
+    { href: "/", label: "CANDIDATES" },
+    { href: "/map", label: "STAR MAP" },
+    { href: "/about", label: "ABOUT" },
   ];
 
   return (
-    <nav className="fixed top-0 left-0 right-0 h-16 bg-[#1e293b] border-b border-slate-700 flex items-center justify-between px-6 z-50">
-      <div className="font-semibold text-lg text-slate-100">
-        Exoplanet Pipeline
+    <nav className="fixed top-0 left-0 right-0 h-12 bg-[var(--panel)] border-b border-[var(--border-color)] flex items-center justify-between px-6 z-50">
+      <div className="flex items-center gap-3">
+        <span className="text-[var(--accent)] font-bold font-mono text-sm">
+          [
+        </span>
+        <span className="font-sans font-black text-sm tracking-tighter text-[var(--fg)]">
+          EXOPLANET PIPELINE
+        </span>
+        <span className="text-[var(--fg-dim)] font-mono text-xs">
+          REV 2.6 // TESS S1–3
+        </span>
+        <span className="text-[var(--accent)] font-bold font-mono text-sm">
+          ]
+        </span>
       </div>
-      <NavigationMenu>
-        <NavigationMenuList>
-          {links.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <NavigationMenuItem key={link.href}>
-                <Link href={link.href} legacyBehavior passHref>
-                  <NavigationMenuLink
-                    className={`${navigationMenuTriggerStyle()} bg-transparent hover:bg-slate-800 focus:bg-slate-800 ${
-                      isActive ? 'text-[#f59e0b] underline underline-offset-4 decoration-2' : 'text-slate-300'
-                    }`}
-                  >
-                    {link.label}
-                  </NavigationMenuLink>
-                </Link>
-              </NavigationMenuItem>
-            );
-          })}
-        </NavigationMenuList>
-      </NavigationMenu>
+
+      <div className="flex items-center gap-1">
+        {links.map((link, i) => {
+          const isActive = pathname === link.href;
+          return (
+            <span key={link.href} className="flex items-center">
+              {i > 0 && (
+                <span className="text-[var(--border-color)] mx-1 font-mono text-xs">
+                  //
+                </span>
+              )}
+              <Link
+                href={link.href}
+                className={`font-mono text-xs px-3 py-1 transition-colors ${
+                  isActive
+                    ? "bg-[var(--accent)] text-[var(--fg)]"
+                    : "text-[var(--fg-dim)] hover:text-[var(--fg)] hover:bg-[var(--surface)]"
+                }`}
+              >
+                {link.label}
+              </Link>
+            </span>
+          );
+        })}
+      </div>
     </nav>
   );
 }
