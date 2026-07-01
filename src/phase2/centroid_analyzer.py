@@ -44,6 +44,16 @@ class CentroidAnalyzer:
     def run_top_n(self) -> None:
         """Run centroid analysis on top N SDE>=7 candidates sorted by SDE."""
         df = pd.read_parquet(self.catalogue_path)
+        
+        # Bug #8 Fix: Initialize centroid_computed column if it doesn't exist
+        # Use a separate flag column instead of checking value == 0.0
+        # (since 0.0 is a valid astronomical measurement meaning no shift detected)
+        if 'centroid_computed' not in df.columns:
+            df['centroid_computed'] = False
+        
+        # Initialize centroid_shift_sigma if missing
+        if 'centroid_shift_sigma' not in df.columns:
+            df['centroid_shift_sigma'] = np.nan
 
         # Select top N SDE>=7 candidates
         sde7 = df[df['tls_sde'] >= 7].nlargest(self.top_n, 'tls_sde')
@@ -53,8 +63,8 @@ class CentroidAnalyzer:
             row = sde7.loc[idx]
             tic_id = row['tic_id']
 
-            # Skip if already computed (non-zero value)
-            if df.loc[idx, 'centroid_shift_sigma'] != 0.0:
+            # Bug #8 Fix: Use computed flag instead of value-based check
+            if df.loc[idx, 'centroid_computed'] == True:
                 continue
 
             try:
@@ -66,6 +76,7 @@ class CentroidAnalyzer:
                     duration=row['tls_duration'],
                 )
                 df.loc[idx, 'centroid_shift_sigma'] = shift_sigma
+                df.loc[idx, 'centroid_computed'] = True  # Mark as computed
             except Exception as e:
                 errors.append({'tic_id': tic_id, 'error': str(e)})
 

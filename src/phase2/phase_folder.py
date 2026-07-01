@@ -113,9 +113,29 @@ class PhaseFolder:
 
     @staticmethod
     def _normalize(view: np.ndarray) -> np.ndarray:
-        """Normalize view: subtract median, scale so min=-1."""
-        view = view - np.median(view)
+        """Normalize view: subtract median, scale so min=-1.
+        
+        Bug #7 Fix: Handle edge cases where:
+        - All values are the same (flat view)
+        - All values are zero (empty bins)
+        - min_val is exactly 0 after median subtraction
+        
+        Returns view with median=0 and min=-1 when possible,
+        or zeros if view has no variance.
+        """
+        # Handle NaN values first
+        view = np.nan_to_num(view, nan=0.0, posinf=0.0, neginf=0.0)
+        
+        median_val = np.median(view)
+        view = view - median_val
+        
         min_val = np.min(view)
-        if min_val < 0:
+        
+        # Bug #7 Fix: Guard against division by zero
+        # Only scale if there's a meaningful dip (transit depth)
+        if min_val < -1e-10:  # Has a real negative dip
             view = view / np.abs(min_val)
-        return view
+        # If min_val >= 0 or very small, view stays as median-subtracted
+        # This handles flat views, all-zero views, and views with no transit
+        
+        return view.astype(np.float32)

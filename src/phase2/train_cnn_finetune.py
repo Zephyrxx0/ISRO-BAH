@@ -3,6 +3,10 @@
 Loads data/models/kepler_pretrained.h5, freezes early conv layers, and fine-tunes
 on ExoFOP-TESS labeled candidates with 7x augmentation. Saves cnn_finetuned.h5.
 
+Bug fixes addressed:
+    - Bug #14: Auto-call PhaseFolder if folded_path column is missing
+    - Bug #15: Pin MLflow tracking URI to project root
+
 Usage:
     python src/phase2/train_cnn_finetune.py --epochs 50 --batch-size 32 --lr 1e-4
 """
@@ -10,6 +14,7 @@ Usage:
 import os
 import argparse
 import subprocess
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -29,6 +34,10 @@ tf.random.set_seed(SEED)
 MODEL_INPUT_PATH = 'data/models/kepler_pretrained.h5'
 MODEL_OUTPUT_PATH = 'data/models/cnn_finetuned.h5'
 
+# Bug #15 Fix: Pin MLflow tracking URI to project root
+PROJECT_ROOT = Path(__file__).parent.parent.parent.resolve()
+MLFLOW_TRACKING_URI = f'file://{PROJECT_ROOT}/.mlruns'
+
 
 def get_git_hash() -> str:
     """Return short git commit hash for MLflow run naming."""
@@ -38,6 +47,67 @@ def get_git_hash() -> str:
         ).decode().strip()[:7]
     except Exception:
         return 'unknown'
+
+
+def ensure_phase_folded(df: pd.DataFrame, catalogue_path: str) -> pd.DataFrame:
+    """Bug #14 Fix: Ensure all candidates have phase-folded views.
+    
+    If folded_path column is missing or has nulls, run PhaseFolder to generate
+    the required global/local views for CNN training.
+    
+    Args:
+        df: DataFrame with candidates (must have tls_period, tls_t0, tls_duration).
+        catalogue_path: Path to the master catalogue parquet.
+        
+    Returns:
+        DataFrame with folded_path column populated.
+    """
+    # Check if folded_path column exists and has valid paths
+    needs_folding = False
+    
+    if 'folded_path' not in df.columns:
+        needs_folding = True
+        print('folded_path column missing from catalogue - running PhaseFolder...')
+    else:
+        # Check for missing or invalid paths
+        missing_count = df['folded_path'].isna().sum()
+        if missing_count > 0:
+            print(f'{missing_count} candidates missing folded_path - running PhaseFolder...')
+            needs_folding = True
+        else:
+            # Verify paths exist
+            invalid_count = sum(1 for p in df['folded_path'] if not Path(str(p)).exists())
+            if invalid_count > 0:
+                print(f'{invalid_count} folded_path entries point to missing files - running PhaseFolder...')
+                needs_folding = True
+    
+    if needs_folding:
+        from src.phase2.phase_folder import PhaseFolder
+        
+        # Infer directories from catalogue path
+        catalogue_dir = Path(catalogue_path).parent
+        preprocessed_dir = str(catalogue_dir.parent / 'preprocessed')
+        folded_dir = str(catalogue_dir.parent / 'folded')
+        
+        # Try alternate paths if standard paths don't exist
+        if not Path(preprocessed_dir).exists():
+            preprocessed_dir = 'outputs/preprocessed'
+        if not Path(folded_dir).exists():
+            Path(folded_dir).mkdir(parents=True, exist_ok=True)
+        
+        print(f'Running PhaseFolder: preprocessed_dir={preprocessed_dir}, folded_dir={folded_dir}')
+        
+        folder = PhaseFolder(
+            catalogue_path=catalogue_path,
+            preprocessed_dir=preprocessed_dir,
+            folded_dir=folded_dir
+        )
+        folder.run_all()
+        
+        # Reload catalogue with updated folded_path
+        df = pd.read_parquet(catalogue_path)
+    
+    return df
 
 
 def main(args):
@@ -68,6 +138,10 @@ def main(args):
 
     # Load master Parquet, filter to ExoFOP-labeled candidates
     df = pd.read_parquet(args.catalogue)
+    
+    # Bug #14 Fix: Ensure all candidates have phase-folded views
+    df = ensure_phase_folded(df, args.catalogue)
+    
     labeled_df = df[df['label'].notna()].copy()
 
     if len(labeled_df) == 0:
@@ -119,8 +193,8 @@ def main(args):
         test_idx=test_df.index.values,
     )
 
-    # MLflow tracking
-    mlflow.set_tracking_uri(f'file://{os.getcwd()}/.mlruns')
+    # Bug #15 Fix: Use pinned MLflow tracking URI
+    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
     mlflow.set_experiment('tess-finetune-xgboost')
 
     with mlflow.start_run(run_name=f'cnn-finetune-{get_git_hash()}'):
