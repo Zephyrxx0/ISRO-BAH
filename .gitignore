@@ -2,3 +2,19 @@ claude-prod.md
 claude-roadmap.md
 # main.md
 .ignore
+
+.agents
+.gemini
+.firecrawl
+
+
+__pycache__/
+kaggle_output/
+
+# Model binaries and data files
+outputs/models/
+data/kepler/
+data/models/
+*.h5
+*.npz
+SPACE/public/assets/
