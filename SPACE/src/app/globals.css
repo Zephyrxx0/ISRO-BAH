@@ -1,150 +1,64 @@
 @import "tailwindcss";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #09090b;
-  --foreground: #f4f4f5;
-  --border: #27272a;
-  
-  /* Strict accents */
-  --signal-green: #10b981;
-  --warning-amber: #f59e0b;
-  --blending-red: #ef4444;
-  --raw-zinc: #a1a1aa;
-}
+@custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-border-brutal: var(--border);
-  --color-signal-green: var(--signal-green);
-  --color-warning-amber: var(--warning-amber);
-  --color-blending-red: var(--blending-red);
-  --color-raw-zinc: var(--raw-zinc);
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-
-  /* Redefine zinc palette to invert to dark mode natively */
-  --color-zinc-50: #141416;
-  --color-zinc-100: #18181b;
-  --color-zinc-200: #27272a;
-  --color-zinc-300: #3f3f46;
-  --color-zinc-400: #52525b;
-  --color-zinc-500: #71717a;
-  --color-zinc-600: #a1a1aa;
-  --color-zinc-700: #d4d4d8;
-  --color-zinc-800: #e4e4e7;
-  --color-zinc-900: #f4f4f5;
-  --color-zinc-950: #fafafa;
+  --font-sans: var(--font-sans);
+  
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 2px);
+  --radius-md: calc(var(--radius) - 1px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 1px);
 }
 
-/* Force dark mode styles */
-html {
-  color-scheme: dark;
+:root, .dark {
+  --background: #0f172a;
+  --foreground: #f1f5f9;
+  --card: #1e293b;
+  --card-foreground: #f1f5f9;
+  --popover: #1e293b;
+  --popover-foreground: #f1f5f9;
+  --primary: #f59e0b;
+  --primary-foreground: #000000;
+  --secondary: #334155;
+  --secondary-foreground: #f1f5f9;
+  --muted: #334155;
+  --muted-foreground: #94a3b8;
+  --accent: #f59e0b;
+  --accent-foreground: #000000;
+  --destructive: #ef4444;
+  --destructive-foreground: #f1f5f9;
+  --border: #334155;
+  --input: #334155;
+  --ring: #f59e0b;
+  --radius: 0.5rem;
 }
 
-body {
-  background-color: var(--background);
-  /* Grid pattern: sharp 1px grid lines every 24px in dark low-opacity */
-  background-image: 
-    linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
-  color: var(--foreground);
-  font-family: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-}
-
-/* Custom Scrollbar for brutalist terminal vibe */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-::-webkit-scrollbar-track {
-  background: var(--background);
-  border-left: 1px solid var(--border);
-  border-top: 1px solid var(--border);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border: 1px solid var(--background);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--raw-zinc);
-}
-
-/* Custom Leaflet Map Inversion Style for Celestial Radar */
-.celestial-map-container {
-  border: 1px solid var(--border);
-}
-
-.celestial-map-container .leaflet-tile-container {
-  /* Native dark mode tiles loaded; no filter inversion needed */
-}
-
-.celestial-map-container .leaflet-container {
-  background: var(--background) !important;
-}
-
-.celestial-map-container .leaflet-bar {
-  border: 1px solid var(--border) !important;
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
-
-.celestial-map-container .leaflet-bar a {
-  border-radius: 0 !important;
-  border-bottom: 1px solid var(--border) !important;
-  background: var(--background) !important;
-  color: var(--foreground) !important;
-  font-family: var(--font-geist-mono), monospace !important;
-  font-weight: bold !important;
-}
-
-.celestial-map-container .leaflet-bar a:hover {
-  background: var(--foreground) !important;
-  color: var(--background) !important;
-}
-
-/* Leaflet control container customization */
-.leaflet-control-attribution {
-  font-size: 7px !important;
-  text-transform: uppercase;
-  background: rgba(9, 9, 11, 0.8) !important;
-  border-left: 1px solid var(--border) !important;
-  border-top: 1px solid var(--border) !important;
-  color: var(--raw-zinc) !important;
-}
-
-/* Plotly customization for brutalist look */
-.plotly-graph-container {
-  border: 1px solid var(--border);
-  background: var(--background);
-}
-
-/* Micro-animations and utility effects */
-@keyframes signal-pulse {
-  0%, 100% { opacity: 0.3; }
-  50% { opacity: 1; }
-}
-
-.animate-signal-pulse {
-  animation: signal-pulse 2s infinite ease-in-out;
-}
-
-.brutalist-button {
-  background: var(--background);
-  border: 1px solid var(--border);
-  padding: 4px 8px;
-  font-size: 11px;
-  text-transform: uppercase;
-  font-weight: bold;
-  cursor: pointer;
-  transition: all 0.1s ease;
-}
-
-.brutalist-button:hover {
-  background: var(--foreground);
-  color: var(--background);
-}
-
-.brutalist-button:active {
-  transform: translate(1px, 1px);
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
 }
