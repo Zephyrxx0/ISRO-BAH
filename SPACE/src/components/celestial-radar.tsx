@@ -104,9 +104,9 @@ function StarInfoPanel({
       {/* Action */}
       <Link
         href={`/star/${ticIdUrl}`}
-        className="block w-full text-center font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] py-2 mt-3 transition-colors no-underline"
+        className="block w-full text-center font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-2 py-2 mt-3 transition-colors no-underline truncate"
       >
-        [ VIEW FULL DIAGNOSTICS ]
+        [ VIEW DIAGNOSTICS ]
       </Link>
     </div>
   );
@@ -121,7 +121,6 @@ export default function CelestialRadar({
   const mapInstanceRef = useRef<any>(null);
   const markersRef = useRef<{ [ticId: string]: any }>({});
   const circlesRef = useRef<{ [ticId: string]: any[] }>({});
-  const labelsRef = useRef<{ [ticId: string]: any }>({});
   const [leafletLoaded, setLeafletLoaded] = useState(false);
   const LRef = useRef<any>(null);
 
@@ -207,10 +206,8 @@ export default function CelestialRadar({
     Object.values(circlesRef.current).forEach((cList) =>
       cList.forEach((c) => c.remove())
     );
-    Object.values(labelsRef.current).forEach((l) => l.remove());
     markersRef.current = {};
     circlesRef.current = {};
-    labelsRef.current = {};
 
     candidates.forEach((cand) => {
       const y = cand.dec;
@@ -225,39 +222,21 @@ export default function CelestialRadar({
 
       const isSelected = cand.ticId === selectedTicId;
 
-      // Outer pulse ring — only visible when selected
-      const pulseRing = L.circle([y, x], {
-        radius: isSelected ? 18 : 0,
-        color: color,
-        weight: 1,
-        fill: true,
-        fillColor: color,
-        fillOpacity: isSelected ? 0.12 : 0,
-        opacity: isSelected ? 0.6 : 0,
-        dashArray: null,
-        className: isSelected ? "celestial-pulse" : "",
-      }).addTo(map);
-
-      // Selection ring
+      // Dashed selection ring
       const selRing = L.circle([y, x], {
-        radius: isSelected ? 8 : 4,
+        radius: isSelected ? 7 : 4,
         color: color,
-        weight: isSelected ? 1.5 : 0.5,
+        weight: isSelected ? 1 : 0.5,
         fill: false,
-        dashArray: isSelected ? null : "4 4",
-        opacity: isSelected ? 0.9 : 0.35,
+        dashArray: "4 4",
+        opacity: isSelected ? 0.8 : 0.3,
       }).addTo(map);
 
       // Crosshair marker
       const markerHtml = `
         <div style="position:relative;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:crosshair">
-          <div style="position:absolute;width:${isSelected ? 14 : 10}px;height:1px;background:${isSelected ? color : "rgba(234,234,234,0.4)"};transition:all 150ms"></div>
-          <div style="position:absolute;height:${isSelected ? 14 : 10}px;width:1px;background:${isSelected ? color : "rgba(234,234,234,0.4)"};transition:all 150ms"></div>
-          ${
-            isSelected
-              ? `<div style="position:absolute;width:5px;height:5px;background:${color};opacity:0.8;transition:all 150ms"></div>`
-              : ""
-          }
+          <div style="position:absolute;width:${isSelected ? 14 : 10}px;height:1px;background:${isSelected ? color : "rgba(234,234,234,0.3)"};transition:all 150ms"></div>
+          <div style="position:absolute;height:${isSelected ? 14 : 10}px;width:1px;background:${isSelected ? color : "rgba(234,234,234,0.3)"};transition:all 150ms"></div>
         </div>
       `;
 
@@ -271,27 +250,11 @@ export default function CelestialRadar({
       const marker = L.marker([y, x], { icon: customIcon }).addTo(map);
       markersRef.current[cand.ticId] = marker;
 
-      // Selected label (only for selected star)
-      let label: any = null;
-      if (isSelected) {
-        const labelIcon = L.divIcon({
-          html: `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;color:${color};white-space:nowrap;text-shadow:0 0 6px ${color}40;letter-spacing:0.1em;transform:translate(-50%,-140%)">${cand.name}</div>`,
-          className: "",
-          iconSize: [0, 0],
-          iconAnchor: [0, 0],
-        });
-        label = L.marker([y, x], {
-          icon: labelIcon,
-          interactive: false,
-        }).addTo(map);
-        labelsRef.current[cand.ticId] = label;
-      }
-
       marker.on("click", () => {
         onSelectCandidate(cand.ticId);
       });
 
-      circlesRef.current[cand.ticId] = [pulseRing, selRing];
+      circlesRef.current[cand.ticId] = [selRing];
     });
   }, [leafletLoaded, candidates, selectedTicId, onSelectCandidate]);
 
