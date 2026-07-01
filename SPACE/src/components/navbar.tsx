@@ -7,7 +7,8 @@ export function Navbar() {
   const pathname = usePathname();
 
   const links = [
-    { href: "/", label: "CANDIDATES" },
+    { href: "/", label: "HOME" },
+    { href: "/candidates", label: "CANDIDATES" },
     { href: "/map", label: "STAR MAP" },
     { href: "/about", label: "ABOUT" },
   ];
@@ -19,7 +20,7 @@ export function Navbar() {
           [
         </span>
         <span className="font-sans font-black text-sm tracking-tighter text-[var(--fg)]">
-          EXOPLANET PIPELINE
+          LIGHTSPEED
         </span>
         <span className="text-[var(--fg-dim)] font-mono text-xs">
           REV 2.6 // TESS S1–3

@@ -17,7 +17,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "EXOPLANET DETECTION PIPELINE",
+  title: "LIGHTSPEED",
   description: "TESS Transit Detection — Raw Telemetry Terminal",
 };
 

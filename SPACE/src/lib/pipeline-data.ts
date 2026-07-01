@@ -4,17 +4,32 @@ import { PipelinePayload, CandidateEntry } from '../../outputs/integration-schem
 import { generateMockPayload } from '../utils/mock-generator';
 
 export function getPipelineData(): PipelinePayload {
+  let pipelineData: PipelinePayload | null = null;
+
   try {
     const filePath = path.join(process.cwd(), '../outputs/pipeline-payload.json');
     if (fs.existsSync(filePath)) {
       const fileContents = fs.readFileSync(filePath, 'utf8');
-      return JSON.parse(fileContents);
+      pipelineData = JSON.parse(fileContents);
     }
   } catch (error) {
-    console.error("Error reading pipeline payload, falling back to mock generator:", error);
+    console.error("Error reading pipeline payload:", error);
   }
-  // Fallback to mock generator if pipeline output doesn't exist
-  return generateMockPayload(18);
+
+  const mockData = generateMockPayload(18);
+
+  if (!pipelineData) {
+    return mockData;
+  }
+
+  // Merge candidates (real data takes precedence if there are duplicates)
+  return {
+    ...pipelineData,
+    candidates: {
+      ...mockData.candidates,
+      ...pipelineData.candidates
+    }
+  };
 }
 
 export function getAllCandidates(): CandidateEntry[] {
