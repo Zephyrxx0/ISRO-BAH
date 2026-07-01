@@ -5,7 +5,7 @@ import { PipelinePayload } from "../../outputs/integration-schema";
 
 interface SimulationPanelProps {
   currentHour: number;
-  onChangeHour: (hour: number) => void;
+  onChangeHour?: (hour: number) => void;
   payload: PipelinePayload;
 }
 
@@ -69,7 +69,7 @@ export default function SimulationPanel({
         {/* CONTROLS */}
         <div className="grid grid-cols-2 gap-2">
           <button
-            onClick={() => onChangeHour(0)}
+            onClick={() => onChangeHour?.(0)}
             className={`font-mono text-[10px] tracking-widest px-3 py-2 border transition-colors ${
               !isH18
                 ? "bg-[var(--accent)] border-[var(--accent)] text-[var(--fg)]"
@@ -79,7 +79,7 @@ export default function SimulationPanel({
             [ H00 BASELINE ]
           </button>
           <button
-            onClick={() => onChangeHour(18)}
+            onClick={() => onChangeHour?.(18)}
             className={`font-mono text-[10px] tracking-widest px-3 py-2 border transition-colors ${
               isH18
                 ? "bg-[var(--terminal-green)] border-[var(--terminal-green)] text-[var(--bg)] font-bold"

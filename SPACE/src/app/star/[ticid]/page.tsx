@@ -1,7 +1,3 @@
-"use client";
-
-import { use, useMemo, useState } from "react";
-import { generateMockPayload } from "@/utils/mock-generator";
 import BreadcrumbNav from "@/components/breadcrumb-nav";
 import ParameterCard from "@/components/parameter-card";
 import DiagnosticPlot from "@/components/diagnostic-plot";
@@ -11,21 +7,20 @@ import SimulationPanel from "@/components/simulation-panel";
 import { AISynthesisPanel } from "@/components/ai-synthesis-panel";
 import CelestialRadar from "@/components/celestial-radar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { getCandidateById, getAllCandidates, getPipelineData } from "@/lib/pipeline-data";
 
-export default function StarDetailPage({
+export default async function StarDetailPage({
   params,
 }: {
   params: Promise<{ ticid: string }>;
 }) {
-  const { ticid } = use(params);
-  const [currentHour, setCurrentHour] = useState<number>(18);
+  const resolvedParams = await params;
+  const { ticid } = resolvedParams;
 
-  const payload = useMemo(() => generateMockPayload(currentHour), [currentHour]);
-  const entry = payload.candidates[ticid.replace("TIC", "TIC ")];
-  
-  const allSignals = useMemo(() => {
-    return Object.values(payload.candidates).map((c) => c.signal);
-  }, [payload]);
+  const currentHour = 18;
+  const payload = getPipelineData();
+  const entry = getCandidateById(ticid);
+  const allSignals = getAllCandidates().map((c) => c.signal);
 
   if (!entry) {
     return (
@@ -79,23 +74,23 @@ export default function StarDetailPage({
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[var(--border-color)]">
                     <DiagnosticPlot
-                      pngPath={`/plots/${signal.ticId.replace(" ", "_")}/raw_detrended.png`}
-                      htmlPath={`/plots/${signal.ticId.replace(" ", "_")}/raw_detrended.html`}
+                      plotType="raw_detrended"
+                      candidate={entry}
                       alt="Raw + Detrended Light Curve"
                     />
                     <DiagnosticPlot
-                      pngPath={`/plots/${signal.ticId.replace(" ", "_")}/periodogram.png`}
-                      htmlPath={`/plots/${signal.ticId.replace(" ", "_")}/periodogram.html`}
+                      plotType="periodogram"
+                      candidate={entry}
                       alt="TLS Periodogram"
                     />
                     <DiagnosticPlot
-                      pngPath={`/plots/${signal.ticId.replace(" ", "_")}/phase_folded.png`}
-                      htmlPath={`/plots/${signal.ticId.replace(" ", "_")}/phase_folded.html`}
+                      plotType="phase_folded"
+                      candidate={entry}
                       alt="Phase-Folded + Model"
                     />
                     <DiagnosticPlot
-                      pngPath={`/plots/${signal.ticId.replace(" ", "_")}/softmax.png`}
-                      htmlPath={`/plots/${signal.ticId.replace(" ", "_")}/softmax.html`}
+                      plotType="softmax"
+                      candidate={entry}
                       alt="Classifier Softmax"
                     />
                   </div>
@@ -103,8 +98,8 @@ export default function StarDetailPage({
 
                 {/* MCMC Corner Plot */}
                 <DiagnosticPlot
-                  pngPath={`/plots/${signal.ticId.replace(" ", "_")}/corner.png`}
-                  htmlPath={null}
+                  plotType="corner"
+                  candidate={entry}
                   alt="MCMC Corner Plot"
                 />
 
@@ -128,9 +123,9 @@ export default function StarDetailPage({
                     <TransitFitMatrix candidate={entry} />
                   </div>
                   <div className="xl:col-span-1">
+                    {/* SimulationPanel interactivity removed since we are loading static data */}
                     <SimulationPanel
                       currentHour={currentHour}
-                      onChangeHour={setCurrentHour}
                       payload={payload}
                     />
                   </div>
@@ -158,7 +153,6 @@ export default function StarDetailPage({
               <CelestialRadar
                 candidates={allSignals}
                 selectedTicId={signal.ticId}
-                onSelectCandidate={(id) => {}}
               />
             </div>
           </TabsContent>

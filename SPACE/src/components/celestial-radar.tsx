@@ -7,7 +7,7 @@ import { AstronomicalSignal } from "../../outputs/integration-schema";
 interface CelestialRadarProps {
   candidates: AstronomicalSignal[];
   selectedTicId: string;
-  onSelectCandidate: (ticId: string) => void;
+  onSelectCandidate?: (ticId: string) => void;
 }
 
 function StarInfoPanel({
@@ -244,7 +244,7 @@ export default function CelestialRadar({
       markersRef.current[cand.ticId] = marker;
 
       marker.on("click", () => {
-        onSelectCandidate(cand.ticId);
+        onSelectCandidate?.(cand.ticId);
       });
     });
   }, [leafletLoaded, candidates]); // Removed onSelectCandidate to prevent re-creation loop
@@ -344,7 +344,7 @@ export default function CelestialRadar({
               return (
                 <button
                   key={cand.ticId}
-                  onClick={() => onSelectCandidate(cand.ticId)}
+                  onClick={() => onSelectCandidate?.(cand.ticId)}
                   className={`font-mono text-[9px] tracking-widest px-2 py-1 border transition-colors ${cand.ticId === selectedTicId
                       ? "border-[var(--fg)] text-[var(--fg)] bg-[var(--surface)]"
                       : "border-[var(--border-color)] text-[var(--fg-dim)] hover:text-[var(--fg)] hover:border-[var(--fg-dim)]"

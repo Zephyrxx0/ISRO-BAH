@@ -1,19 +1,11 @@
-'use client';
-
-import { useMemo } from 'react';
-import { generateMockPayload } from '../utils/mock-generator';
+import { getAllCandidates } from '../lib/pipeline-data';
 import CandidateTable from '../components/candidate-table';
 import { StatCards } from '../components/stat-cards';
 
 export default function Home() {
-  const payload = useMemo(() => {
-    return generateMockPayload(18);
-  }, []);
-
-  const allSignals = useMemo(() => {
-    return Object.values(payload.candidates).map((c) => c.signal);
-  }, [payload]);
-
+  const allCandidates = getAllCandidates();
+  const allSignals = allCandidates.map((c) => c.signal);
+  
   const totalCandidates = allSignals.length;
   const goldCount = allSignals.filter(s => s.confidenceTier === 'GOLD').length;
   const planetCount = allSignals.filter(s => s.disposition === 'CONFIRMED_PLANET').length;
