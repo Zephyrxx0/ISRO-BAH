@@ -23,6 +23,10 @@ from pipeline.preprocess import (
 from pipeline.detect import run_tls_batch, apply_sde_gating, save_tls_results
 from pipeline.detect.bls_validate import validate_candidates
 from pipeline.validate import run_smoke_test
+from src.report import (
+    generate_catalogue, generate_report,
+    generate_candidates_json, generate_star_jsons,
+)
 
 warnings.filterwarnings("ignore")
 
@@ -175,6 +179,10 @@ def main():
         "--validate", action="store_true",
         help="Run smoke test validation on catalogue"
     )
+    parser.add_argument(
+        "--presentation", action="store_true",
+        help="Generate Phase 4 presentation outputs (CSV, PDF, JSON)"
+    )
     args = parser.parse_args()
 
     sectors = [int(s.strip()) for s in args.sectors.split(",")]
@@ -280,6 +288,57 @@ def main():
             print("  All 7 benchmark planets recovered.")
         else:
             print("  Some benchmark planets not recovered — check catalogue.")
+
+    # ── Phase 4: Generate presentation outputs ──
+    if args.presentation:
+        print("\n[Phase 4] Generating presentation outputs...")
+        outputs_dir = Path("outputs")
+        dashboard_dir = Path("SPACE")
+
+        generate_catalogue(
+            results_dir=outputs_dir,
+            output_path=outputs_dir / "catalogue.csv",
+        )
+        print(f"  ✓ Catalogue CSV: {outputs_dir / 'catalogue.csv'}")
+
+        generate_candidates_json(
+            results_dir=outputs_dir,
+            output_path=outputs_dir / "candidates.json",
+        )
+        stars_dir = outputs_dir / "stars"
+        stars_dir.mkdir(exist_ok=True)
+        n_stars = generate_star_jsons(
+            results_dir=outputs_dir,
+            output_dir=stars_dir,
+        )
+        print(f"  ✓ Dashboard data: candidates.json + {n_stars} star JSONs")
+
+        generate_report(
+            outputs_dir=outputs_dir,
+            output_path=outputs_dir / "report.pdf",
+        )
+        print(f"  ✓ PDF report: {outputs_dir / 'report.pdf'}")
+
+        import shutil
+        plots_src = outputs_dir / "plots"
+        plots_dest = dashboard_dir / "public" / "plots"
+        if plots_src.exists():
+            if plots_dest.exists():
+                shutil.rmtree(plots_dest)
+            shutil.copytree(plots_src, plots_dest)
+            print(f"  ✓ Plots copied to {plots_dest}")
+
+        dash_outputs = dashboard_dir / "outputs"
+        dash_outputs.mkdir(exist_ok=True)
+        shutil.copy2(outputs_dir / "candidates.json", dash_outputs / "candidates.json")
+        stars_dash = dash_outputs / "stars"
+        if stars_dash.exists():
+            shutil.rmtree(stars_dash)
+        if stars_dir.exists():
+            shutil.copytree(stars_dir, stars_dash)
+        print(f"  ✓ Data copied to SPACE/outputs/")
+
+        print("Phase 4: Presentation outputs complete.")
 
     elapsed = (time.time() - t0) / 60.0
     print(f"\nPipeline complete in {elapsed:.1f} minutes.")
