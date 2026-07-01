@@ -8,22 +8,44 @@ def npz_path(tic_id, sector, kind='raw'):
     base = cfg.RAW_DIR if kind == 'raw' else cfg.PREP_DIR
     return base / f"tic{tic_id:016d}_s{sector:04d}_{kind}.npz"
 
-def save_lc_npz(tic_id, sector, time, flux, flux_err, quality, meta, kind='raw'):
-    """Save lightcurve data to compressed npz file, serializing meta as JSON."""
+def save_lc_npz(tic_id, sector, time, flux, flux_err, quality, meta, kind='raw', **extra_arrays):
+    """Save lightcurve data to compressed npz file, serializing meta as JSON.
+    
+    Bug #10 Fix: Now accepts **extra_arrays for additional data like flux_normalized.
+    
+    Args:
+        tic_id: TIC identifier.
+        sector: TESS sector number.
+        time: Time array.
+        flux: Flux array (detrended for 'preprocessed' kind).
+        flux_err: Flux error array.
+        quality: Quality flags array (can be None).
+        meta: Metadata dictionary.
+        kind: File kind ('raw' or 'preprocessed').
+        **extra_arrays: Additional named arrays to save (e.g., flux_normalized).
+    """
     path = npz_path(tic_id, sector, kind=kind)
     path.parent.mkdir(parents=True, exist_ok=True)
     
     # Serialize the meta dictionary to a JSON string
     meta_json = json.dumps(meta)
     
-    np.savez_compressed(
-        str(path),
-        time=time,
-        flux=flux,
-        flux_err=flux_err,
-        quality=quality,
-        meta_json=meta_json
-    )
+    # Build save dict with required arrays
+    save_dict = {
+        'time': time,
+        'flux': flux,
+        'flux_err': flux_err,
+        'meta_json': meta_json
+    }
+    
+    # Add quality if provided
+    if quality is not None:
+        save_dict['quality'] = quality
+    
+    # Bug #10 Fix: Add any extra arrays (e.g., flux_normalized)
+    save_dict.update(extra_arrays)
+    
+    np.savez_compressed(str(path), **save_dict)
     return path
 
 def load_lc_npz(tic_id, sector, kind='raw'):

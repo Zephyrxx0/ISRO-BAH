@@ -66,6 +66,7 @@ def run_tls_single(args):
                 'tic_id': int(tic_id),
                 'sector': int(sector),
                 'planet_num': i,
+                'candidate_num': i,  # Bug #16 Fix: Add candidate_num column (alias for planet_num)
                 'period': float(res.period),
                 't0': float(res.T0),
                 'duration': float(res.duration),

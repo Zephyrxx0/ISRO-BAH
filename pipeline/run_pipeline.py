@@ -28,7 +28,11 @@ warnings.filterwarnings("ignore")
 
 
 def preprocess_star(tic_id, sector):
-    """Full preprocessing pipeline for a single star. Returns dict with status."""
+    """Full preprocessing pipeline for a single star. Returns dict with status.
+    
+    Bug #9 Fix: Now computes and stores median_flux_err for noise injection
+    augmentation during training. Also stores flux_normalized key for consistency.
+    """
     try:
         lc = load_lc_npz(tic_id, sector, kind='raw')
         time = lc['time']
@@ -63,17 +67,31 @@ def preprocess_star(tic_id, sector):
         flat_flux, trend = apply_biweight_detrend(time_good, flux_good)
 
         meta['gap_mask_gaps'] = [(float(g[0]), float(g[1])) for g in gaps]
+        
+        # Bug #9 Fix: Compute median_flux_err for noise injection augmentation
+        # This is needed by data_generator.py for realistic noise injection
+        median_flux_err = float(np.median(flux_err_good))
+        meta['median_flux_err'] = median_flux_err
+        
+        # Bug #10 Fix: Compute flux_normalized (pre-detrending normalized flux)
+        # for GP detrending step which expects this key (Plan 05).
+        # Normalize to median=1.0 before detrending for GP input
+        flux_median = np.median(flux_good)
+        flux_normalized = flux_good / flux_median if flux_median > 0 else flux_good
 
         save_lc_npz(
             tic_id, sector,
             time=time_good, flux=flat_flux,
             flux_err=flux_err_good, quality=None,
             meta=meta, kind='preprocessed',
+            # Bug #10: Add flux_normalized for GP detrending step
+            flux_normalized=flux_normalized,
         )
 
         return {
             "tic_id": tic_id, "status": "PREPROCESSED",
-            "n_cadences": len(time_good), "n_gaps": len(gaps)
+            "n_cadences": len(time_good), "n_gaps": len(gaps),
+            "median_flux_err": median_flux_err,  # Bug #9: propagate for catalogue
         }
     except FileNotFoundError:
         return {"tic_id": tic_id, "status": "MISSING_RAW"}
@@ -82,7 +100,10 @@ def preprocess_star(tic_id, sector):
 
 
 def build_master_catalogue(tls_results_df, preprocess_results):
-    """Merge TLS results with star metadata into master Parquet catalogue."""
+    """Merge TLS results with star metadata into master Parquet catalogue.
+    
+    Bug #9 Fix: Now includes median_flux_err column for noise injection augmentation.
+    """
     if tls_results_df.empty:
         return pd.DataFrame()
 
@@ -94,7 +115,8 @@ def build_master_catalogue(tls_results_df, preprocess_results):
 
     extra_cols = {}
     tics = tls_results_df['tic_id'].tolist()
-    for col_name in ['tmag', 'ra', 'dec', 'n_cadences', 'n_gaps']:
+    # Bug #9: Add median_flux_err to columns propagated to catalogue
+    for col_name in ['tmag', 'ra', 'dec', 'n_cadences', 'n_gaps', 'median_flux_err']:
         extra_cols[col_name] = []
         for tic in tics:
             info = preproc_map.get(tic, {})

@@ -6,6 +6,34 @@ import pipeline.config as cfg
 from pipeline.ingest.store import save_lc_npz
 
 
+def _get_tic_crowdsap(tic_id):
+    """Query TIC for CROWDSAP (contamination ratio) for a target.
+    
+    CROWDSAP = 1 - contratio, where contratio is the fraction of flux
+    from contaminating sources. CROWDSAP near 1 means clean target.
+    
+    Bug #3 Fix: TIC stores 'contratio', but we need CROWDSAP = 1 - contratio.
+    """
+    try:
+        from astroquery.mast import Catalogs
+        result = Catalogs.query_criteria(catalog="TIC", ID=str(tic_id))
+        if result is None or len(result) == 0:
+            return 1.0  # Default: assume clean
+        
+        row = result[0]
+        # TIC 'contratio' is contamination ratio (flux from neighbors / total)
+        # CROWDSAP = 1 - contratio (fraction of flux from target star)
+        contratio = row.get('contratio', 0.0)
+        if contratio is None or np.ma.is_masked(contratio) or np.isnan(contratio):
+            return 1.0
+        
+        # Bug #3 Fix: Correct inversion - CROWDSAP = 1 - contratio
+        crowdsap = 1.0 - float(contratio)
+        return max(0.0, min(1.0, crowdsap))  # Clamp to [0, 1]
+    except Exception:
+        return 1.0  # Default on error
+
+
 def _download_single_tic(tic_id, sector, quality_bitmask=175):
     """Download and store a single TESS light curve as .npz."""
     try:
@@ -24,6 +52,9 @@ def _download_single_tic(tic_id, sector, quality_bitmask=175):
             return {"tic_id": tic_id, "status": "DOWNLOAD_FAILED"}
 
         lc = lc_collection.stitch()
+        
+        # Query CROWDSAP from TIC (Bug #3 fix)
+        crowdsap = _get_tic_crowdsap(tic_id)
 
         meta = {
             "tic_id": tic_id,
@@ -32,6 +63,7 @@ def _download_single_tic(tic_id, sector, quality_bitmask=175):
             "dec": getattr(lc, "dec", None),
             "tmag": getattr(lc, "tess_mag", None),
             "teff": getattr(lc, "teff", None),
+            "crowdsap": crowdsap,  # Bug #3: Now correctly computed as 1 - contratio
         }
 
         save_lc_npz(
