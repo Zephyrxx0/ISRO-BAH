@@ -9,29 +9,29 @@ Requirements for the 30-hour hackathon grand finale. Each maps to pipeline stage
 
 ### Data Ingestion
 
-- [ ] **DATA-01**: Pipeline downloads TESS 2-min cadence light curves for Sectors 1, 2, and 3 (~60,000 stars) from MAST via lightkurve/astroquery
-- [ ] **DATA-02**: Pipeline downloads Target Pixel Files (TPFs) via TESScut for centroid analysis on top SDE ≥ 7 candidates
-- [ ] **DATA-03**: Pipeline downloads ExoFOP-TESS TOI disposition table for training labels
-- [ ] **DATA-04**: Pipeline downloads Kepler DR24 TCE catalog (AstroNet dataset, 34,032 labeled samples) for CNN pre-training
-- [ ] **DATA-05**: Pipeline stores raw data as .npz per TIC ID with a Parquet master catalogue
+- [x] **DATA-01**: Pipeline downloads TESS 2-min cadence light curves for Sectors 1, 2, and 3 (~60,000 stars) from MAST via lightkurve/astroquery
+- [ ] **DATA-02**: Pipeline downloads Target Pixel Files (TPFs) via TESScut for centroid analysis on top SDE ≥ 7 candidates (deferred to Phase 2)
+- [ ] **DATA-03**: Pipeline downloads ExoFOP-TESS TOI disposition table for training labels (Phase 2)
+- [ ] **DATA-04**: Pipeline downloads Kepler DR24 TCE catalog (AstroNet dataset, 34,032 labeled samples) for CNN pre-training (Phase 2 prep)
+- [x] **DATA-05**: Pipeline stores raw data as .npz per TIC ID with a Parquet master catalogue
 
 ### Preprocessing
 
-- [ ] **PREP-01**: Pipeline removes NaNs and quality-flagged cadences (AttitudeTweak, SafeMode, CosmicRay, ManualExclude)
-- [ ] **PREP-02**: Pipeline performs sigma-clipping at 5σ to remove outliers, then normalizes flux to median = 1.0
-- [ ] **PREP-03**: Pipeline detrends all 60k light curves using biweight method (Wotan, window_length=0.75d) preserving transit shapes
-- [ ] **PREP-04**: Pipeline applies Gaussian Process detrending (celerite2 Matérn-3/2) on top 100 SDE ≥ 7 candidates to model correlated noise
-- [ ] **PREP-05**: Pipeline masks (does not interpolate) 13-day TESS data gaps, flagging gap-edge cadences as unreliable
-- [ ] **PREP-06**: Pipeline excludes stars with TESS magnitude < 6 (saturation artefacts) and light curves with < 500 valid cadences
-- [ ] **PREP-07**: Pipeline extracts per-star limb darkening coefficients from TICv8 using Claret & Bloemen (2011) tables for batman inputs
+- [x] **PREP-01**: Pipeline removes NaNs and quality-flagged cadences (AttitudeTweak, SafeMode, CosmicRay, ManualExclude)
+- [x] **PREP-02**: Pipeline performs sigma-clipping at 5σ to remove outliers, then normalizes flux to median = 1.0
+- [x] **PREP-03**: Pipeline detrends all 60k light curves using biweight method (Wotan, window_length=0.75d) preserving transit shapes
+- [x] **PREP-04**: Pipeline applies Gaussian Process detrending (celerite2 Matérn-3/2) on top 100 SDE ≥ 7 candidates to model correlated noise
+- [x] **PREP-05**: Pipeline masks (does not interpolate) 13-day TESS data gaps, flagging gap-edge cadences as unreliable
+- [x] **PREP-06**: Pipeline excludes stars with TESS magnitude < 6 (saturation artefacts) and light curves with < 500 valid cadences
+- [x] **PREP-07**: Pipeline extracts per-star limb darkening coefficients from TICv8 using Claret & Bloemen (2011) tables for batman inputs
 
 ### Detection — Period Search
 
-- [ ] **DET-01**: Pipeline runs TLS (Transit Least Squares) as primary period search on all preprocessed light curves (period range 0.5–30 days, 50k frequency steps)
-- [ ] **DET-02**: Pipeline runs BLS (Box Least Squares) as validation check on top candidates
-- [ ] **DET-03**: Pipeline performs iterative multi-planet search (3 iterations) — masking found signals and re-running TLS
-- [ ] **DET-04**: Pipeline computes SDE, SNR, and CDPP for every detected signal
-- [ ] **DET-05**: Pipeline applies 3-tier SDE gating: SDE < 5 → discard, 5 ≤ SDE < 7 → keep as sub-threshold, SDE ≥ 7 → full pipeline
+- [x] **DET-01**: Pipeline runs TLS (Transit Least Squares) as primary period search on all preprocessed light curves (period range 0.5–30 days, 50k frequency steps)
+- [x] **DET-02**: Pipeline runs BLS (Box Least Squares) as validation check on top candidates
+- [x] **DET-03**: Pipeline performs iterative multi-planet search (3 iterations) — masking found signals and re-running TLS
+- [x] **DET-04**: Pipeline computes SDE, SNR, and CDPP for every detected signal
+- [x] **DET-05**: Pipeline applies 3-tier SDE gating: SDE < 5 → discard, 5 ≤ SDE < 7 → keep as sub-threshold, SDE ≥ 7 → full pipeline
 
 ### Feature Extraction
 
@@ -133,23 +133,23 @@ Deferred to post-hackathon. Tracked but not in current roadmap.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| DATA-01 | Phase 1 | Pending |
-| DATA-02 | Phase 1 | Pending |
-| DATA-03 | Phase 1 | Pending |
-| DATA-04 | Phase 1 | Pending |
-| DATA-05 | Phase 1 | Pending |
-| PREP-01 | Phase 1 | Pending |
-| PREP-02 | Phase 1 | Pending |
-| PREP-03 | Phase 1 | Pending |
-| PREP-04 | Phase 1 | Pending |
-| PREP-05 | Phase 1 | Pending |
-| PREP-06 | Phase 1 | Pending |
-| PREP-07 | Phase 1 | Pending |
-| DET-01 | Phase 1 | Pending |
-| DET-02 | Phase 1 | Pending |
-| DET-03 | Phase 1 | Pending |
-| DET-04 | Phase 1 | Pending |
-| DET-05 | Phase 1 | Pending |
+| DATA-01 | Phase 1 | Done |
+| DATA-02 | Phase 1 | Deferred (Phase 2) |
+| DATA-03 | Phase 1 | Deferred (Phase 2) |
+| DATA-04 | Phase 1 | Deferred (Phase 2) |
+| DATA-05 | Phase 1 | Done |
+| PREP-01 | Phase 1 | Done |
+| PREP-02 | Phase 1 | Done |
+| PREP-03 | Phase 1 | Done |
+| PREP-04 | Phase 1 | Done |
+| PREP-05 | Phase 1 | Done |
+| PREP-06 | Phase 1 | Done |
+| PREP-07 | Phase 1 | Done |
+| DET-01 | Phase 1 | Done |
+| DET-02 | Phase 1 | Done |
+| DET-03 | Phase 1 | Done |
+| DET-04 | Phase 1 | Done |
+| DET-05 | Phase 1 | Done |
 | FEAT-01 | Phase 2 | Pending |
 | FEAT-02 | Phase 2 | Pending |
 | FEAT-03 | Phase 2 | Pending |
