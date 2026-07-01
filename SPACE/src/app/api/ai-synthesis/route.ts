@@ -70,11 +70,12 @@ Instructions:
 Write a professional, 2-paragraph research synthesis evaluating this target's context and viability as an exoplanet. 
 In the first paragraph, summarize the astrophysical context (spectral type, location) based only on the SIMBAD data.
 In the second paragraph, evaluate the pipeline metrics (SDE, FPP, Disposition) and provide a recommendation on whether this is a strong planet candidate or likely a false positive/eclipsing binary.
+If you know of any high-confidence, publicly accessible image URLs (like NASA or ESA archive images) for this specific star, you may embed them using Markdown syntax: ![alt text](URL).
 CRITICAL GUARDRAIL: Do NOT hallucinate data. Do NOT mention any papers or citations unless you absolutely know them to be true. Stick only to the data provided above.
 `;
 
     // Step 3: Stream from Gemini
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' });
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' });
     const streamingResp = await model.generateContentStream(prompt);
 
     const stream = new ReadableStream({

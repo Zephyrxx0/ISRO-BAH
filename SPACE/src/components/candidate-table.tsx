@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import {
   ColumnFiltersState,
   SortingState,
@@ -26,8 +27,6 @@ import { AstronomicalSignal } from "../../outputs/integration-schema";
 
 interface CandidateTableProps {
   candidates: AstronomicalSignal[];
-  selectedTicId: string;
-  onSelectCandidate: (ticId: string) => void;
 }
 
 const TIER_OPTIONS = [
@@ -40,9 +39,8 @@ const TIER_OPTIONS = [
 
 export default function CandidateTable({
   candidates,
-  selectedTicId,
-  onSelectCandidate,
 }: CandidateTableProps) {
+  const router = useRouter();
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -61,9 +59,6 @@ export default function CandidateTable({
     state: {
       sorting,
       columnFilters,
-    },
-    meta: {
-      onSelectCandidate,
     },
     initialState: {
       pagination: { pageSize: 20 },
@@ -148,17 +143,11 @@ export default function CandidateTable({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => {
-                const isSelected = row.original.ticId === selectedTicId;
                 return (
                   <TableRow
                     key={row.id}
-                    data-state={isSelected ? "selected" : undefined}
-                    className={`cursor-pointer border-b border-[var(--border-color)] transition-colors ${
-                      isSelected
-                        ? "bg-[var(--accent)]/10 border-l-[3px] border-l-[var(--accent)]"
-                        : "hover:bg-[var(--panel)]/50"
-                    }`}
-                    onClick={() => onSelectCandidate(row.original.ticId)}
+                    className="cursor-pointer border-b border-[var(--border-color)] transition-colors hover:bg-[var(--panel)]/50"
+                    onClick={() => router.push(`/star/${row.original.ticId.replace(/\s/g, "")}`)}
                   >
                     {row.getVisibleCells().map((cell) => (
                       <TableCell key={cell.id} className="px-4 py-2">

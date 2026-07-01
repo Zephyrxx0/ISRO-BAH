@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sparkles, AlertCircle } from 'lucide-react';
 import { CandidateEntry } from '../../outputs/integration-schema';
 import { Button } from '@/components/ui/button';
+import ReactMarkdown from 'react-markdown';
 
 interface AISynthesisPanelProps {
   candidate: CandidateEntry;
@@ -14,6 +15,11 @@ export function AISynthesisPanel({ candidate }: AISynthesisPanelProps) {
   const [report, setReport] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setReport('');
+    setError(null);
+  }, [candidate.signal.ticId]);
 
   const generateReport = async () => {
     setLoading(true);
@@ -97,9 +103,9 @@ export function AISynthesisPanel({ candidate }: AISynthesisPanelProps) {
         )}
 
         {(report || loading) && (
-          <div className="flex-1 overflow-y-auto">
-            <div className="prose prose-sm prose-invert max-w-none text-foreground leading-relaxed whitespace-pre-wrap">
-              {report}
+          <div className="flex-1 overflow-y-auto custom-scrollbar pr-2">
+            <div className="prose prose-sm prose-invert max-w-none text-foreground leading-relaxed">
+              <ReactMarkdown>{report}</ReactMarkdown>
             </div>
             {loading && (
               <div className="flex items-center gap-2 mt-4 text-primary text-xs font-semibold animate-pulse">

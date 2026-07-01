@@ -9,3 +9,12 @@ claude-roadmap.md
 
 
 __pycache__/
+kaggle_output/
+
+# Model binaries and data files
+outputs/models/
+data/kepler/
+data/models/
+*.h5
+*.npz
+SPACE/public/assets/

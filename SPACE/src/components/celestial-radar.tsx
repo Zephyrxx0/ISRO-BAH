@@ -104,7 +104,7 @@ function StarInfoPanel({
       {/* Action */}
       <Link
         href={`/star/${ticIdUrl}`}
-        className="block w-full text-center font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-2 py-1 mt-3 transition-colors no-underline whitespace-nowrap overflow-hidden"
+        className="block w-full text-center font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-2 py-1 transition-colors no-underline whitespace-nowrap overflow-hidden"
       >
         [ VIEW DIAGNOSTICS ]
       </Link>
@@ -122,6 +122,7 @@ export default function CelestialRadar({
   const markersRef = useRef<{ [ticId: string]: any }>({});
   const circlesRef = useRef<{ [ticId: string]: any[] }>({});
   const [leafletLoaded, setLeafletLoaded] = useState(false);
+  const [currentZoom, setCurrentZoom] = useState(2);
   const LRef = useRef<any>(null);
 
   const selectedStar = useMemo(
@@ -153,16 +154,26 @@ export default function CelestialRadar({
     const map = L.map(mapContainerRef.current, {
       crs: L.CRS.Simple,
       center: [0, 180],
-      zoom: 0,
-      minZoom: -1,
-      maxZoom: 3,
+      zoom: 3,
+      minZoom: 2,
+      maxZoom: 6,
       zoomControl: false,
       attributionControl: false,
       maxBounds: BOUNDS,
       maxBoundsViscosity: 1.0,
     });
 
-    map.getContainer().style.background = "#0A0A0A";
+    map.on('zoom', () => {
+      setCurrentZoom(map.getZoom());
+    });
+
+    const starMapUrl = '/assets/skymap.svg';
+    L.imageOverlay(starMapUrl, BOUNDS, { 
+      opacity: 0.6,
+      className: 'sepia-[.2] hue-rotate-[180deg] saturate-[1.5]' // Gives it a cool tactical blue-ish tint
+    }).addTo(map);
+
+    map.getContainer().style.background = "#050505";
 
     const gridPane = map.createPane("grid");
     gridPane.style.pointerEvents = "none";
@@ -203,67 +214,61 @@ export default function CelestialRadar({
     const map = mapInstanceRef.current;
 
     Object.values(markersRef.current).forEach((m) => m.remove());
-    Object.values(circlesRef.current).forEach((cList) =>
-      cList.forEach((c) => c.remove())
-    );
     markersRef.current = {};
-    circlesRef.current = {};
 
     candidates.forEach((cand) => {
-      const y = cand.dec;
-      const x = cand.ra;
-
       let color = "#4af626";
-      if (cand.disposition === "BINARY_STAR_ECLIPSE") {
-        color = "#e61919";
-      } else if (cand.disposition === "BACKGROUND_STELLAR_CONTAMINATION") {
+      if (cand.disposition === "BINARY_STAR_ECLIPSE" || cand.disposition === "BACKGROUND_STELLAR_CONTAMINATION") {
         color = "#e61919";
       }
 
+      const safeId = cand.ticId.replace(/\s+/g, '-');
       const isSelected = cand.ticId === selectedTicId;
-
-      // Dashed selection ring
-      const selRing = L.circle([y, x], {
-        radius: isSelected ? 7 : 4,
-        color: color,
-        weight: isSelected ? 1 : 0.5,
-        fill: false,
-        dashArray: "4 4",
-        opacity: isSelected ? 0.8 : 0.3,
-      }).addTo(map);
-
-      // Crosshair marker
       const markerHtml = `
-        <div style="position:relative;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:crosshair">
-          <div style="position:absolute;width:${isSelected ? 14 : 10}px;height:1px;background:${isSelected ? color : "rgba(234,234,234,0.3)"};transition:all 150ms"></div>
-          <div style="position:absolute;height:${isSelected ? 14 : 10}px;width:1px;background:${isSelected ? color : "rgba(234,234,234,0.3)"};transition:all 150ms"></div>
+        <div class="radar-marker ${isSelected ? 'selected' : ''}" id="marker-${safeId}" style="--active-color: ${color};">
+          <div class="radar-backdrop"></div>
+          <div class="radar-ring"></div>
+          <div class="radar-x"></div>
+          <div class="radar-y"></div>
         </div>
       `;
 
       const customIcon = L.divIcon({
         html: markerHtml,
         className: "",
-        iconSize: [20, 20],
-        iconAnchor: [10, 10],
+        iconSize: [48, 48],
+        iconAnchor: [24, 24],
       });
 
-      const marker = L.marker([y, x], { icon: customIcon }).addTo(map);
+      const marker = L.marker([cand.dec, cand.ra], { icon: customIcon }).addTo(map);
       markersRef.current[cand.ticId] = marker;
 
       marker.on("click", () => {
         onSelectCandidate(cand.ticId);
       });
-
-      circlesRef.current[cand.ticId] = [selRing];
     });
-  }, [leafletLoaded, candidates, selectedTicId, onSelectCandidate]);
+  }, [leafletLoaded, candidates]); // Removed onSelectCandidate to prevent re-creation loop
 
   useEffect(() => {
     if (!leafletLoaded || !mapInstanceRef.current) return;
     const map = mapInstanceRef.current;
+    
+    // Toggle active state classes using the DOM directly for smooth CSS transitions
+    candidates.forEach((cand) => {
+      const safeId = cand.ticId.replace(/\s+/g, '-');
+      const el = document.getElementById(`marker-${safeId}`);
+      if (el) {
+        if (cand.ticId === selectedTicId) {
+          el.classList.add("selected");
+        } else {
+          el.classList.remove("selected");
+        }
+      }
+    });
+
     const selectedCand = candidates.find((c) => c.ticId === selectedTicId);
     if (selectedCand) {
-      map.panTo([selectedCand.dec, selectedCand.ra], { animate: false });
+      map.panTo([selectedCand.dec, selectedCand.ra], { animate: true, duration: 0.5 });
     }
   }, [selectedTicId, candidates, leafletLoaded]);
 
@@ -293,6 +298,37 @@ export default function CelestialRadar({
             className="w-full h-full"
             style={{ minHeight: "350px" }}
           />
+
+          {/* CUSTOM ZOOM CONTROLS */}
+          {leafletLoaded && (
+            <div className="absolute bottom-4 right-4 z-[400] flex items-center border border-[var(--border-color)] bg-[var(--panel)]">
+              <button
+                onClick={() => mapInstanceRef.current?.zoomOut()}
+                className="px-3 py-1 font-mono text-[var(--fg-dim)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition-colors border-r border-[var(--border-color)] leading-none text-lg"
+              >
+                -
+              </button>
+              <input
+                type="range"
+                min="2"
+                max="6"
+                step="0.1"
+                value={currentZoom}
+                onChange={(e) => {
+                  const val = parseFloat(e.target.value);
+                  setCurrentZoom(val);
+                  mapInstanceRef.current?.setZoom(val);
+                }}
+                className="brutalist-slider w-24 mx-3"
+              />
+              <button
+                onClick={() => mapInstanceRef.current?.zoomIn()}
+                className="px-3 py-1 font-mono text-[var(--fg-dim)] hover:text-[var(--fg)] hover:bg-[var(--surface)] transition-colors border-l border-[var(--border-color)] leading-none text-lg"
+              >
+                +
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Candidate strip */}
@@ -309,11 +345,10 @@ export default function CelestialRadar({
                 <button
                   key={cand.ticId}
                   onClick={() => onSelectCandidate(cand.ticId)}
-                  className={`font-mono text-[9px] tracking-widest px-2 py-1 border transition-colors ${
-                    cand.ticId === selectedTicId
+                  className={`font-mono text-[9px] tracking-widest px-2 py-1 border transition-colors ${cand.ticId === selectedTicId
                       ? "border-[var(--fg)] text-[var(--fg)] bg-[var(--surface)]"
                       : "border-[var(--border-color)] text-[var(--fg-dim)] hover:text-[var(--fg)] hover:border-[var(--fg-dim)]"
-                  }`}
+                    }`}
                 >
                   <span style={{ color }}>+</span> {cand.name}
                 </button>
@@ -324,8 +359,8 @@ export default function CelestialRadar({
       </div>
 
       {/* INFO PANEL — right side */}
-      <div className="w-64 border-l border-[var(--border-color)] bg-[var(--panel)] flex-shrink-0 hidden xl:block">
-        <div className="px-4 py-2 border-b border-[var(--border-color)] bg-[var(--panel)]">
+      <div className="w-64 border-l border-[var(--border-color)] bg-[var(--panel)] flex-shrink-0 hidden xl:flex xl:flex-col">
+        <div className="px-4 py-1 border-b border-[var(--border-color)] bg-[var(--panel)]">
           <span className="font-mono text-[10px] tracking-widest text-[var(--fg-dim)]">
             [ TELEMETRY ]
           </span>
