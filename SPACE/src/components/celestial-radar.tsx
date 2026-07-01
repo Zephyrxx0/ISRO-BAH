@@ -53,7 +53,7 @@ function StarInfoPanel({
   const ticIdUrl = star.ticId.replace(/\s/g, "");
 
   return (
-    <div className="h-full flex flex-col p-4">
+    <div className="h-full flex flex-col p-4 min-w-0 overflow-hidden">
       {/* Header */}
       <div className="border-b border-[var(--border-color)] pb-3 mb-3">
         <h2 className="font-sans font-black text-sm text-[var(--fg)] tracking-tighter">
@@ -104,7 +104,7 @@ function StarInfoPanel({
       {/* Action */}
       <Link
         href={`/star/${ticIdUrl}`}
-        className="block w-full text-center font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-2 py-2 mt-3 transition-colors no-underline truncate"
+        className="block w-full text-center font-mono text-[10px] tracking-widest text-[var(--fg-dim)] hover:text-[var(--fg)] border border-[var(--border-color)] hover:border-[var(--fg-dim)] px-2 py-1 mt-3 transition-colors no-underline whitespace-nowrap overflow-hidden"
       >
         [ VIEW DIAGNOSTICS ]
       </Link>
