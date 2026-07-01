@@ -1,8 +1,37 @@
 'use client';
 
-import { useState } from 'react';
-import { AstronomicalSignal, ConfidenceTier, PipelineDisposition } from '../../outputs/integration-schema';
-import { Database, Filter, Search, ArrowUpDown } from 'lucide-react';
+import * as React from 'react';
+import {
+  ColumnFiltersState,
+  SortingState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
+
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+
+import { candidateColumns } from './candidate-columns';
+import { AstronomicalSignal } from '../../outputs/integration-schema';
 
 interface CandidateTableProps {
   candidates: AstronomicalSignal[];
@@ -10,206 +39,138 @@ interface CandidateTableProps {
   onSelectCandidate: (ticId: string) => void;
 }
 
-type SortField = 'name' | 'period' | 'depth' | 'sde' | 'snr' | 'confidenceTier';
-type SortOrder = 'asc' | 'desc';
-
 export default function CandidateTable({
   candidates,
   selectedTicId,
-  onSelectCandidate
+  onSelectCandidate,
 }: CandidateTableProps) {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [filterTier, setFilterTier] = useState<string>('ALL');
-  const [sortField, setSortField] = useState<SortField>('sde');
-  const [sortOrder, setSortOrder] = useState<SortOrder>('desc');
+  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 
-  const handleSort = (field: SortField) => {
-    if (sortField === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortField(field);
-      setSortOrder('desc');
-    }
-  };
-
-  const getTierColor = (tier: ConfidenceTier) => {
-    switch (tier) {
-      case 'GOLD':
-        return 'text-signal-green border-signal-green/20 bg-signal-green/10';
-      case 'SILVER':
-        return 'text-warning-amber border-warning-amber/20 bg-warning-amber/10';
-      case 'BRONZE':
-        return 'text-zinc-600 border-zinc-600/20 bg-zinc-600/10';
-      case 'FALSE_POSITIVE':
-        return 'text-blending-red border-blending-red/20 bg-blending-red/10';
-    }
-  };
-
-  const getDispositionLabel = (disp: PipelineDisposition) => {
-    switch (disp) {
-      case 'CONFIRMED_PLANET':
-        return 'CONFIRMED';
-      case 'BINARY_STAR_ECLIPSE':
-        return 'EB ECLIPSE';
-      case 'BACKGROUND_STELLAR_CONTAMINATION':
-        return 'BG BLEND';
-      case 'FALSE_ALARM':
-        return 'FALSE ALARM';
-    }
-  };
-
-  // Filter & Sort candidates
-  const processedCandidates = candidates
-    .filter((cand) => {
-      const matchesSearch = 
-        cand.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        cand.ticId.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      const matchesTier = filterTier === 'ALL' || cand.confidenceTier === filterTier;
-      
-      return matchesSearch && matchesTier;
-    })
-    .sort((a, b) => {
-      let comparison = 0;
-      if (sortField === 'name') {
-        comparison = a.name.localeCompare(b.name);
-      } else if (sortField === 'confidenceTier') {
-        comparison = a.confidenceTier.localeCompare(b.confidenceTier);
-      } else {
-        comparison = a[sortField] - b[sortField];
-      }
-      return sortOrder === 'asc' ? comparison : -comparison;
-    });
+  const table = useReactTable({
+    data: candidates,
+    columns: candidateColumns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getFilteredRowModel: getFilteredRowModel(),
+    state: {
+      sorting,
+      columnFilters,
+    },
+    meta: {
+      onSelectCandidate,
+    },
+    initialState: {
+      pagination: { pageSize: 20 },
+    },
+  });
 
   return (
-    <div className="border border-border-brutal bg-background flex flex-col h-full">
-      {/* Header Controls */}
-      <div className="p-4 border-b border-border-brutal bg-background flex flex-col lg:flex-row lg:items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Database className="w-4 h-4 text-zinc-950" />
-          <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-900">
-            TESS SECTOR TARGET DATA MATRIX
-          </span>
-        </div>
-        
-        {/* Search & Filter Inputs */}
-        <div className="flex items-center gap-2 text-[10px] font-mono">
-          <div className="relative flex items-center">
-            <Search className="w-3.5 h-3.5 text-raw-zinc absolute left-2" />
-            <input
-              type="text"
-              placeholder="SEARCH TIC ID / TARGET NAME"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 pr-2 py-1 border border-border-brutal bg-background focus:outline-none focus:bg-zinc-50 w-[180px] uppercase placeholder-zinc-400 font-bold"
-            />
-          </div>
-
-          <div className="flex items-center gap-1.5 border border-border-brutal px-2 py-1 bg-zinc-50">
-            <Filter className="w-3.5 h-3.5 text-zinc-800" />
-            <select
-              value={filterTier}
-              onChange={(e) => setFilterTier(e.target.value)}
-              className="bg-transparent text-zinc-800 focus:outline-none font-bold uppercase cursor-pointer"
-            >
-              <option value="ALL" className="bg-zinc-50 text-zinc-800">ALL TIERS</option>
-              <option value="GOLD" className="bg-zinc-50 text-zinc-800">GOLD</option>
-              <option value="SILVER" className="bg-zinc-50 text-zinc-800">SILVER</option>
-              <option value="BRONZE" className="bg-zinc-50 text-zinc-800">BRONZE</option>
-              <option value="FALSE_POSITIVE" className="bg-zinc-50 text-zinc-800">FALSE POSITIVE</option>
-            </select>
-          </div>
-        </div>
+    <div className="w-full space-y-4">
+      <div className="flex flex-col sm:flex-row items-center gap-4">
+        <Input
+          placeholder="Filter by TIC ID..."
+          value={(table.getColumn('ticId')?.getFilterValue() as string) ?? ''}
+          onChange={(event) =>
+            table.getColumn('ticId')?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+        <Select
+          onValueChange={(value) => {
+            if (value === 'ALL') table.getColumn('confidenceTier')?.setFilterValue('');
+            else table.getColumn('confidenceTier')?.setFilterValue(value);
+          }}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="All Tiers" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ALL">All Tiers</SelectItem>
+            <SelectItem value="GOLD">Gold</SelectItem>
+            <SelectItem value="SILVER">Silver</SelectItem>
+            <SelectItem value="BRONZE">Bronze</SelectItem>
+            <SelectItem value="FALSE_POSITIVE">False Positive</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      {/* Candidates Data Log Table */}
-      <div className="flex-1 overflow-x-auto">
-        <table className="w-full text-left border-collapse text-[10px] font-mono">
-          <thead>
-            <tr className="bg-zinc-100 border-b border-border-brutal text-[8px] text-zinc-600 select-none">
-              <th className="p-3 border-r border-border-brutal uppercase">TIC ID</th>
-              <th className="p-3 border-r border-border-brutal uppercase cursor-pointer hover:bg-zinc-200" onClick={() => handleSort('name')}>
-                <div className="flex items-center gap-1.5">
-                  TARGET ID <ArrowUpDown className="w-3 h-3 text-zinc-500" />
-                </div>
-              </th>
-              <th className="p-3 border-r border-border-brutal uppercase cursor-pointer hover:bg-zinc-200" onClick={() => handleSort('period')}>
-                <div className="flex items-center gap-1.5">
-                  PERIOD (D) <ArrowUpDown className="w-3 h-3 text-zinc-500" />
-                </div>
-              </th>
-              <th className="p-3 border-r border-border-brutal uppercase cursor-pointer hover:bg-zinc-200" onClick={() => handleSort('depth')}>
-                <div className="flex items-center gap-1.5">
-                  DEPTH (PPT) <ArrowUpDown className="w-3 h-3 text-zinc-500" />
-                </div>
-              </th>
-              <th className="p-3 border-r border-border-brutal uppercase cursor-pointer hover:bg-zinc-200" onClick={() => handleSort('sde')}>
-                <div className="flex items-center gap-1.5">
-                  SDE <ArrowUpDown className="w-3 h-3 text-zinc-500" />
-                </div>
-              </th>
-              <th className="p-3 border-r border-border-brutal uppercase cursor-pointer hover:bg-zinc-200" onClick={() => handleSort('snr')}>
-                <div className="flex items-center gap-1.5">
-                  SNR <ArrowUpDown className="w-3 h-3 text-zinc-500" />
-                </div>
-              </th>
-              <th className="p-3 border-r border-border-brutal uppercase cursor-pointer hover:bg-zinc-200" onClick={() => handleSort('confidenceTier')}>
-                <div className="flex items-center gap-1.5">
-                  CONFIDENCE <ArrowUpDown className="w-3 h-3 text-zinc-500" />
-                </div>
-              </th>
-              <th className="p-3 uppercase">DISPOSITION</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border-brutal">
-            {processedCandidates.length > 0 ? (
-              processedCandidates.map((cand) => {
-                const isSelected = cand.ticId === selectedTicId;
+      <div className="rounded-md border bg-card">
+        <Table>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => {
+                const isSelected = row.original.ticId === selectedTicId;
                 return (
-                  <tr
-                    key={cand.ticId}
-                    onClick={() => onSelectCandidate(cand.ticId)}
-                    className={`cursor-pointer transition-all select-none hover:bg-zinc-50 ${
-                      isSelected ? 'bg-zinc-100 font-bold border-l-4 border-l-zinc-900 border-r border-y-zinc-200' : ''
-                    }`}
+                  <TableRow
+                    key={row.id}
+                    data-state={isSelected ? 'selected' : undefined}
+                    className={`cursor-pointer ${isSelected ? 'bg-muted/50 border-l-2 border-primary' : ''}`}
+                    onClick={() => onSelectCandidate(row.original.ticId)}
                   >
-                    <td className="p-3 border-r border-border-brutal font-mono text-zinc-600">{cand.ticId}</td>
-                    <td className="p-3 border-r border-border-brutal text-zinc-950 font-bold">{cand.name}</td>
-                    <td className="p-3 border-r border-border-brutal font-mono">{cand.period.toFixed(6)}</td>
-                    <td className="p-3 border-r border-border-brutal font-mono font-bold text-zinc-900">{cand.depth.toFixed(3)}</td>
-                    <td className="p-3 border-r border-border-brutal font-mono">{cand.sde.toFixed(2)}</td>
-                    <td className="p-3 border-r border-border-brutal font-mono">{cand.snr.toFixed(2)}</td>
-                    <td className="p-3 border-r border-border-brutal">
-                      <span className={`px-2 py-0.5 border font-bold text-[8px] ${getTierColor(cand.confidenceTier)}`}>
-                        {cand.confidenceTier}
-                      </span>
-                    </td>
-                    <td className="p-3">
-                      <span className={`font-mono text-[9px] font-bold ${
-                        cand.disposition === 'CONFIRMED_PLANET' ? 'text-signal-green' : 
-                        cand.disposition === 'BINARY_STAR_ECLIPSE' ? 'text-warning-amber' : 'text-blending-red'
-                      }`}>
-                        {getDispositionLabel(cand.disposition)}
-                      </span>
-                    </td>
-                  </tr>
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
                 );
               })
             ) : (
-              <tr>
-                <td colSpan={8} className="p-8 text-center text-raw-zinc uppercase font-bold bg-zinc-50">
-                  NO SIGNALS DETECTED IN SELECTED SEARCH RANGE
-                </td>
-              </tr>
+              <TableRow>
+                <TableCell
+                  colSpan={candidateColumns.length}
+                  className="h-24 text-center"
+                >
+                  No candidates match your filters
+                </TableCell>
+              </TableRow>
             )}
-          </tbody>
-        </table>
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Database Footer Status */}
-      <div className="p-3 border-t border-border-brutal bg-zinc-50 text-[9px] text-raw-zinc font-mono flex items-center justify-between">
-        <span>TOTAL RECORDED DATABASE ENTRIES: {candidates.length} CANDIDATES</span>
-        <span>SHERLOCK APERTURE ALGORITHM ACTIVE</span>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

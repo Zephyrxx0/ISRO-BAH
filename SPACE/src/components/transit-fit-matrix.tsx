@@ -2,7 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { CandidateEntry } from '../../outputs/integration-schema';
-import { Activity, Radio, Cpu, BarChart2 } from 'lucide-react';
+import { Activity, Radio, Cpu } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 
 interface TransitFitMatrixProps {
   candidate: CandidateEntry;
@@ -14,15 +16,14 @@ export default function TransitFitMatrix({ candidate }: TransitFitMatrixProps) {
   const plotlyInstance = useRef<any>(null);
 
   // Color code line based on classification
-  let fitColor = '#22C55E'; // Signal Green
+  let fitColor = '#10b981'; // Signal Green
   if (candidate.signal.disposition === 'BINARY_STAR_ECLIPSE') {
-    fitColor = '#F59E0B'; // Warning Amber
+    fitColor = '#f59e0b'; // Warning Amber
   } else if (candidate.signal.disposition === 'BACKGROUND_STELLAR_CONTAMINATION') {
-    fitColor = '#EF4444'; // Blending Red
+    fitColor = '#ef4444'; // Blending Red
   }
 
   useEffect(() => {
-    // Dynamic import to prevent SSR (window undefined) error
     import('plotly.js-dist-min')
       .then((module) => {
         plotlyInstance.current = module.default || module;
@@ -35,21 +36,19 @@ export default function TransitFitMatrix({ candidate }: TransitFitMatrixProps) {
     if (!plotlyLoaded || !plotlyInstance.current || !plotRef.current) return;
     const Plotly = plotlyInstance.current;
 
-    // Layer 1: Raw chaotic TESS light curve data points (Micro-dots, low opacity)
     const rawTrace = {
       x: candidate.lightCurve.rawPhase,
       y: candidate.lightCurve.rawFlux,
       mode: 'markers' as const,
       name: 'RAW VOLATILE TESS FLUX (TESS S-SECTOR)',
       marker: {
-        color: '#71717A',
-        size: 2,
-        opacity: 0.22
+        color: '#64748b',
+        size: 3,
+        opacity: 0.3
       },
       hoverinfo: 'x+y' as const
     };
 
-    // Layer 2: Sharp, geometric AI-predicted model curve
     const fitTrace = {
       x: candidate.lightCurve.modelPhase,
       y: candidate.lightCurve.modelFlux,
@@ -57,7 +56,7 @@ export default function TransitFitMatrix({ candidate }: TransitFitMatrixProps) {
       name: 'AI TRANSIT fit MODEL (PHASE-FOLDED)',
       line: {
         color: fitColor,
-        width: 2.5,
+        width: 3,
         shape: 'linear' as const
       },
       hoverinfo: 'x+y' as const
@@ -67,31 +66,31 @@ export default function TransitFitMatrix({ candidate }: TransitFitMatrixProps) {
 
     const layout = {
       autosize: true,
-      height: 340,
+      height: 380,
       margin: { l: 60, r: 15, t: 15, b: 40 },
-      paper_bgcolor: '#09090b',
-      plot_bgcolor: '#09090b',
-      showlegend: false, // Customized legend built in HTML to preserve density
+      paper_bgcolor: 'transparent',
+      plot_bgcolor: 'transparent',
+      showlegend: false,
       xaxis: {
         title: {
           text: 'FOLDED ORBITAL PHASE (OFFSET ΔT0 / DAYS)',
-          font: { family: 'var(--font-mono), monospace', size: 9, color: '#a1a1aa' }
+          font: { family: 'var(--font-sans)', size: 10, color: '#94a3b8' }
         },
-        gridcolor: '#27272a',
-        linecolor: '#27272a',
-        tickcolor: '#27272a',
-        tickfont: { family: 'var(--font-mono), monospace', size: 9, color: '#a1a1aa' },
+        gridcolor: '#334155',
+        linecolor: '#334155',
+        tickcolor: '#334155',
+        tickfont: { family: 'var(--font-sans)', size: 10, color: '#94a3b8' },
         zeroline: false
       },
       yaxis: {
         title: {
           text: 'NORMALIZED DETECTOR FLUX INTENSITY',
-          font: { family: 'var(--font-mono), monospace', size: 9, color: '#a1a1aa' }
+          font: { family: 'var(--font-sans)', size: 10, color: '#94a3b8' }
         },
-        gridcolor: '#27272a',
-        linecolor: '#27272a',
-        tickcolor: '#27272a',
-        tickfont: { family: 'var(--font-mono), monospace', size: 9, color: '#a1a1aa' },
+        gridcolor: '#334155',
+        linecolor: '#334155',
+        tickcolor: '#334155',
+        tickfont: { family: 'var(--font-sans)', size: 10, color: '#94a3b8' },
         zeroline: false,
         tickformat: '.4f'
       }
@@ -104,7 +103,6 @@ export default function TransitFitMatrix({ candidate }: TransitFitMatrixProps) {
 
     Plotly.newPlot(plotRef.current, data, layout, config);
 
-    // Watch resize
     const handleResize = () => {
       if (plotRef.current) Plotly.Plots.resize(plotRef.current);
     };
@@ -116,126 +114,108 @@ export default function TransitFitMatrix({ candidate }: TransitFitMatrixProps) {
         Plotly.purge(plotRef.current);
       }
     };
-  }, [plotlyLoaded, candidate]);
+  }, [plotlyLoaded, candidate, fitColor]);
 
-  // Color mappings for status flags
-  const statusColors = {
-    'CONFIRMED_PLANET': 'text-signal-green border-signal-green/20 bg-signal-green/10',
-    'BINARY_STAR_ECLIPSE': 'text-warning-amber border-warning-amber/20 bg-warning-amber/10',
-    'BACKGROUND_STELLAR_CONTAMINATION': 'text-blending-red border-blending-red/20 bg-blending-red/10',
-    'FALSE_ALARM': 'text-raw-zinc border-raw-zinc/20 bg-zinc-800/10'
-  };
-
-  const statusLabel = {
-    'CONFIRMED_PLANET': 'CONFIRMED TRANSIT [TP]',
-    'BINARY_STAR_ECLIPSE': 'BINARY ECLIPSE [EB]',
-    'BACKGROUND_STELLAR_CONTAMINATION': 'STELLAR CONTAMINATION [BG]',
-    'FALSE_ALARM': 'FALSE ALARM [FA]'
+  const getStatusBadge = (disposition: string) => {
+    switch (disposition) {
+      case 'CONFIRMED_PLANET':
+        return <Badge className="bg-green-500/20 text-green-500 hover:bg-green-500/30">CONFIRMED PLANET</Badge>;
+      case 'BINARY_STAR_ECLIPSE':
+        return <Badge className="bg-yellow-500/20 text-yellow-500 hover:bg-yellow-500/30">ECLIPSING BINARY</Badge>;
+      case 'BACKGROUND_STELLAR_CONTAMINATION':
+        return <Badge className="bg-red-500/20 text-red-500 hover:bg-red-500/30">BACKGROUND BLEND</Badge>;
+      default:
+        return <Badge variant="outline">FALSE ALARM</Badge>;
+    }
   };
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-4 border border-border-brutal bg-background divide-y lg:divide-y-0 lg:divide-x divide-border-brutal">
-      {/* Telemetry Column */}
-      <div className="p-4 flex flex-col justify-between space-y-4">
-        <div>
-          <div className="flex items-center justify-between border-b border-border-brutal pb-2 mb-3">
-            <span className="text-[10px] uppercase font-bold tracking-wider flex items-center gap-1.5 text-zinc-900">
-              <Cpu className="w-3.5 h-3.5" /> SIGNAL ANALYSIS METADATA
-            </span>
-            <span className="text-[9px] px-1.5 py-0.5 border border-border-brutal bg-zinc-100 font-bold">
-              {candidate.signal.confidenceTier}
-            </span>
+    <Card className="h-full border-border bg-card">
+      <div className="grid grid-cols-1 xl:grid-cols-4 h-full">
+        {/* Telemetry Column */}
+        <div className="p-6 flex flex-col justify-between border-b xl:border-b-0 xl:border-r border-border">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <span className="text-xs uppercase font-semibold text-muted-foreground flex items-center gap-2">
+                <Cpu className="w-4 h-4" /> Parameters
+              </span>
+              <Badge variant="outline" className="text-xs">{candidate.signal.confidenceTier}</Badge>
+            </div>
+            <h2 className="text-2xl font-bold text-foreground">
+              {candidate.signal.name}
+            </h2>
+            <p className="text-sm text-muted-foreground mt-1">
+              TIC ID: {candidate.signal.ticId}
+            </p>
+            <div className="mt-4">
+              {getStatusBadge(candidate.signal.disposition)}
+            </div>
           </div>
 
-          <h2 className="text-xl font-bold tracking-tight text-zinc-950 font-mono">
-            {candidate.signal.name}
-          </h2>
-          <p className="text-[10px] text-raw-zinc font-mono mt-0.5">
-            IDENTIFIER: {candidate.signal.ticId}
-          </p>
+          <div className="grid grid-cols-2 gap-4 py-6 text-sm">
+            <div>
+              <div className="text-xs text-muted-foreground uppercase mb-1">Depth</div>
+              <div className="font-semibold text-foreground">
+                {candidate.signal.depth.toFixed(4)} <span className="text-xs font-normal text-muted-foreground">ppt</span>
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground uppercase mb-1">Period</div>
+              <div className="font-semibold text-foreground">
+                {candidate.signal.period.toFixed(6)} <span className="text-xs font-normal text-muted-foreground">days</span>
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground uppercase mb-1">SDE</div>
+              <div className="font-semibold text-foreground">
+                {candidate.signal.sde.toFixed(2)}
+              </div>
+            </div>
+            <div>
+              <div className="text-xs text-muted-foreground uppercase mb-1">SNR</div>
+              <div className="font-semibold text-foreground">
+                {candidate.signal.snr.toFixed(2)}
+              </div>
+            </div>
+          </div>
 
-          <div className={`mt-3 inline-block text-[9px] font-bold border px-2 py-1 font-mono tracking-wider ${statusColors[candidate.signal.disposition]}`}>
-            {statusLabel[candidate.signal.disposition]}
-          </div>
-        </div>
-
-        {/* Dense telemetry matrix */}
-        <div className="grid grid-cols-2 gap-2 border-t border-b border-dashed border-zinc-300 py-3 my-2 text-[10px]">
-          <div>
-            <div className="text-[8px] text-raw-zinc uppercase">TRANSIT DEPTH</div>
-            <div className="font-mono font-bold text-zinc-900 mt-0.5">
-              {candidate.signal.depth.toFixed(4)} <span className="text-[8px] text-raw-zinc">ppt</span>
+          <div className="space-y-2 mt-4 text-xs text-muted-foreground">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-slate-500"></span>
+              <span>Raw Data Points</span>
             </div>
-          </div>
-          <div>
-            <div className="text-[8px] text-raw-zinc uppercase">ORBITAL PERIOD</div>
-            <div className="font-mono font-bold text-zinc-900 mt-0.5">
-              {candidate.signal.period.toFixed(6)} <span className="text-[8px] text-raw-zinc">days</span>
-            </div>
-          </div>
-          <div>
-            <div className="text-[8px] text-raw-zinc uppercase">SIG DETECTION EFF (SDE)</div>
-            <div className="font-mono font-bold text-zinc-900 mt-0.5">
-              {candidate.signal.sde.toFixed(2)}
-            </div>
-          </div>
-          <div>
-            <div className="text-[8px] text-raw-zinc uppercase">SIGNAL-TO-NOISE (SNR)</div>
-            <div className="font-mono font-bold text-zinc-900 mt-0.5">
-              {candidate.signal.snr.toFixed(2)}
-            </div>
-          </div>
-          <div>
-            <div className="text-[8px] text-raw-zinc uppercase">EPOCH (T0 BJD)</div>
-            <div className="font-mono font-bold text-zinc-900 mt-0.5">
-              {candidate.signal.t0.toFixed(4)}
-            </div>
-          </div>
-          <div>
-            <div className="text-[8px] text-raw-zinc uppercase">TRANSIT DURATION</div>
-            <div className="font-mono font-bold text-zinc-900 mt-0.5">
-              {candidate.signal.duration.toFixed(2)} <span className="text-[8px] text-raw-zinc">hrs</span>
+            <div className="flex items-center gap-2">
+              <span className="w-3 h-1 rounded-sm" style={{ backgroundColor: fitColor }}></span>
+              <span>Model Fit</span>
             </div>
           </div>
         </div>
 
-        {/* Legend status */}
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2 text-[9px] font-mono text-zinc-600">
-            <span className="w-2 h-2 rounded-none bg-raw-zinc inline-block"></span>
-            <span>RAW DATA POINTS (TESS S-Sectors)</span>
+        {/* Plot Column */}
+        <div className="xl:col-span-3 p-6 flex flex-col justify-between h-full bg-card/50">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2 text-foreground">
+              <Activity className="w-4 h-4" />
+              <span className="text-sm uppercase font-bold">
+                Phase-Folded Flux Profile
+              </span>
+            </div>
+            <span className="text-xs text-muted-foreground uppercase">
+              {plotlyLoaded ? 'Interactive Plot' : 'Loading Engine...'}
+            </span>
           </div>
-          <div className="flex items-center gap-2 text-[9px] font-mono text-zinc-600">
-            <span className={`w-2.5 h-0.5 inline-block`} style={{ backgroundColor: fitColor }}></span>
-            <span>AI TRAPEZOIDAL MODEL FIT</span>
+
+          <div className="relative flex-1 w-full flex items-center justify-center min-h-[400px]">
+            {!plotlyLoaded && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center text-xs text-muted-foreground">
+                <Radio className="w-6 h-6 animate-pulse text-muted-foreground mb-3" />
+                Initializing WebGL Engine...
+              </div>
+            )}
+            <div ref={plotRef} className="w-full h-full" />
           </div>
         </div>
       </div>
-
-      {/* Plot Column (occupies 3 out of 4 columns) */}
-      <div className="lg:col-span-3 p-4 flex flex-col justify-between min-h-[360px] bg-background">
-        <div className="flex items-center justify-between border-b border-border-brutal pb-2 mb-2">
-          <div className="flex items-center gap-2">
-            <Activity className="w-3.5 h-3.5 text-zinc-900" />
-            <span className="text-[10px] uppercase font-bold tracking-wider text-zinc-900">
-              PHASE-FOLDED FLUX PROFILE & AI FIT MODEL
-            </span>
-          </div>
-          <span className="text-[9px] text-raw-zinc uppercase font-mono">
-            {plotlyLoaded ? 'Plotly.js ENGINE LOADED' : 'INITIALIZING PLOT ENGINE...'}
-          </span>
-        </div>
-
-        <div className="relative flex-1 w-full bg-background flex items-center justify-center">
-          {!plotlyLoaded && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center font-mono text-[10px] text-raw-zinc bg-zinc-50 border border-dashed border-zinc-300">
-              <Radio className="w-6 h-6 animate-signal-pulse text-zinc-600 mb-2" />
-              RETRIEVING SPECTRAL DE-NOISING COEFFICIENTS...
-            </div>
-          )}
-          <div ref={plotRef} className="w-full h-full" />
-        </div>
-      </div>
-    </div>
+    </Card>
   );
 }
