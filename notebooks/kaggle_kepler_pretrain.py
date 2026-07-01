@@ -370,7 +370,8 @@ class KeplerDataGenerator(tf.keras.utils.Sequence):
     """Data generator with noise injection augmentation (50% probability)."""
 
     def __init__(self, global_views, local_views, labels,
-                 batch_size=64, augment=False, shuffle=True):
+                 batch_size=64, augment=False, shuffle=True, **kwargs):
+        super().__init__(**kwargs)  # Required by Keras 3
         self.global_views = global_views
         self.local_views = local_views
         self.labels = labels
@@ -398,7 +399,8 @@ class KeplerDataGenerator(tf.keras.utils.Sequence):
                 gv[mask] += np.random.normal(0, 0.01, gv[mask].shape).astype(np.float32)
                 lv[mask] += np.random.normal(0, 0.01, lv[mask].shape).astype(np.float32)
 
-        return [gv, lv], y
+        # Keras 3 requires tuple inputs, not list
+        return (gv, lv), y
 
     def on_epoch_end(self):
         if self.shuffle:
@@ -427,11 +429,16 @@ assert len(train_kics & val_kics) == 0, 'Data leakage detected!'
 print(f'Per-KIC split: {len(train_kics)} train KICs, {len(val_kics)} val KICs, 0 overlap')
 print(f'Train samples: {len(idx_train)}, Val samples: {len(idx_val)}')
 
-# Class weights
-class_weights = compute_class_weight(
-    'balanced', classes=np.unique(labels), y=labels[idx_train]
+# Class weights — must cover all 4 classes even if some are absent in small splits.
+# compute_class_weight only returns weights for classes present in labels[idx_train],
+# so build the dict manually to always have keys 0-3.
+present_classes = np.unique(labels[idx_train])
+computed_weights = compute_class_weight(
+    'balanced', classes=present_classes, y=labels[idx_train]
 )
-class_weight_dict = dict(enumerate(class_weights))
+class_weight_dict = {i: 1.0 for i in range(4)}  # default 1.0 for absent classes
+for cls, w in zip(present_classes, computed_weights):
+    class_weight_dict[int(cls)] = float(w)
 print(f'Class weights: {class_weight_dict}')
 
 # Data generators
@@ -456,8 +463,9 @@ model.summary()
 # %% Train
 MODEL_PATH = str(MODEL_DIR / 'kepler_pretrained.h5')
 
-# MLflow tracking (local file-based)
-mlflow.set_tracking_uri(f'file://{BASE_DIR}/.mlruns')
+# MLflow tracking — use SQLite backend (mlflow 3.x deprecated file:// store)
+MLFLOW_DB_PATH = BASE_DIR / 'mlflow.db'
+mlflow.set_tracking_uri(f'sqlite:///{MLFLOW_DB_PATH}')
 mlflow.set_experiment('kepler-pretrain')
 
 with mlflow.start_run(run_name='kepler-pretrain-kaggle'):
@@ -525,16 +533,23 @@ val_gv = global_views[idx_val].reshape(-1, 2001, 1).astype(np.float32)
 val_lv = local_views[idx_val].reshape(-1, 201, 1).astype(np.float32)
 val_labels = labels[idx_val]
 
-# Load best model
+# Load best model — use tuple input (Keras 3 requirement)
 best_model = tf.keras.models.load_model(MODEL_PATH, compile=False)
-preds = best_model.predict([val_gv, val_lv], batch_size=128)
+preds = best_model.predict((val_gv, val_lv), batch_size=128)
 pred_classes = np.argmax(preds, axis=1)
 
 print('\nClassification Report:')
-print(classification_report(val_labels, pred_classes, target_names=CLASS_NAMES))
+# Pass labels=range(4) explicitly so report works even when some classes
+# are absent from the val split (e.g. when running with LIMIT=500)
+print(classification_report(
+    val_labels, pred_classes,
+    labels=list(range(4)),
+    target_names=CLASS_NAMES,
+    zero_division=0,
+))
 
 print('\nConfusion Matrix:')
-cm = confusion_matrix(val_labels, pred_classes)
+cm = confusion_matrix(val_labels, pred_classes, labels=list(range(4)))
 print(cm)
 
 # %% [markdown]

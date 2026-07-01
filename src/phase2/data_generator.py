@@ -27,7 +27,8 @@ class TransitDataGenerator(tf.keras.utils.Sequence):
     """
 
     def __init__(self, df, batch_size: int = 32, augment: bool = False,
-                 shuffle: bool = True):
+                 shuffle: bool = True, **kwargs):
+        super().__init__(**kwargs)  # Required by Keras 3
         self.df = df.reset_index(drop=True)
         self.batch_size = batch_size
         self.augment = augment
@@ -58,9 +59,10 @@ class TransitDataGenerator(tf.keras.utils.Sequence):
             local_views.append(lv.reshape(-1, 1))
             labels.append(row['label'])
 
+        # Keras 3 requires tuple inputs, not list
         return (
-            [np.array(global_views, dtype=np.float32),
-             np.array(local_views, dtype=np.float32)],
+            (np.array(global_views, dtype=np.float32),
+             np.array(local_views, dtype=np.float32)),
             np.array(labels, dtype=np.int32),
         )
 

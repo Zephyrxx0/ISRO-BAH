@@ -57,7 +57,8 @@ class KeplerDataGenerator(tf.keras.utils.Sequence):
     """
     
     def __init__(self, global_views, local_views, labels, 
-                 batch_size=64, augment=False, shuffle=True):
+                 batch_size=64, augment=False, shuffle=True, **kwargs):
+        super().__init__(**kwargs)  # Required by Keras 3
         self.global_views = global_views
         self.local_views = local_views
         self.labels = labels
@@ -82,7 +83,7 @@ class KeplerDataGenerator(tf.keras.utils.Sequence):
         if self.augment:
             gv, lv = self._apply_augmentation(gv, lv)
         
-        return [gv, lv], y
+        return (gv, lv), y  # Keras 3 requires tuple, not list
     
     def on_epoch_end(self):
         if self.shuffle:
